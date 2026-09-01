@@ -1,0 +1,48 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
+    }
+
+    // Everyone can see categories and products; only admins can change them
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      // allow admins to edit anything, and allow the buy-flow (transaction) to
+      // only decrease qty for signed-in users placing an order
+      allow update: if isAdmin() ||
+        (isSignedIn() &&
+         request.resource.data.qty < resource.data.qty &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['qty']));
+    }
+
+    // Orders: a signed-in user can create their own order and read only their own;
+    // admins can read every order
+    match /orders/{orderId} {
+      allow create: if isSignedIn() && request.resource.data.buyerUid == request.auth.uid;
+      allow read: if isSignedIn() &&
+        (resource.data.buyerUid == request.auth.uid || isAdmin());
+      allow update, delete: if false;
+    }
+
+    // Admin allow-list: document ID = admin's email.
+    // Only readable by the check above (via exists()); never writable from the client.
+    match /admins/{email} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}
