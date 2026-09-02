@@ -3,23 +3,29 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../lib/firebase";
-import { checkIsAdmin } from "../lib/firestore";
+import { checkIsAdmin, checkIsSeller } from "../lib/firestore";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSeller, setIsSeller] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser?.email) {
-        const admin = await checkIsAdmin(firebaseUser.email);
+        const [admin, seller] = await Promise.all([
+          checkIsAdmin(firebaseUser.email),
+          checkIsSeller(firebaseUser.email),
+        ]);
         setIsAdmin(admin);
+        setIsSeller(admin || seller);
       } else {
         setIsAdmin(false);
+        setIsSeller(false);
       }
       setLoading(false);
     });
@@ -27,7 +33,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, loading }}>
+    <AuthContext.Provider value={{ user, isAdmin, isSeller, loading }}>
       {children}
     </AuthContext.Provider>
   );
