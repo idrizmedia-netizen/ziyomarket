@@ -58,29 +58,49 @@ export default function ProfilePage() {
             <div className="font-display text-lg mb-3">Xaridlar tarixi</div>
 
             {orders.length === 0 ? (
-              <div className="text-muted text-sm">Hali hech narsa sotib olinmagan.</div>
+              <div className="text-muted text-sm">Hali hech narsa buyurtma qilinmagan.</div>
             ) : (
               <div className="flex flex-col gap-3">
-                {orders.map((o) => (
-                  <div key={o.id} className="bg-white rounded-xl p-3.5 border border-border">
-                    <div className="flex justify-between text-xs text-muted mb-2">
-                      <span>
-                        {o.createdAt?.toDate
-                          ? o.createdAt.toDate().toLocaleString("uz-UZ")
-                          : "hozir"}
-                      </span>
-                      <span className="font-bold text-primary">{formatSum(o.total)}</span>
-                    </div>
-                    {o.items.map((it, idx) => (
-                      <div key={idx} className="text-[13px] flex justify-between py-0.5">
+                {orders.map((o) => {
+                  const statusLabel =
+                    o.status === "fulfilled"
+                      ? "Sotib oldingiz"
+                      : o.status === "cancelled"
+                      ? "Bekor qilindi"
+                      : "Kutilmoqda";
+                  const statusClass =
+                    o.status === "fulfilled"
+                      ? "bg-success/10 text-success"
+                      : o.status === "cancelled"
+                      ? "bg-danger/10 text-danger"
+                      : "bg-accent/15 text-accentDark";
+                  return (
+                    <div key={o.id} className="bg-white rounded-xl p-3.5 border border-border">
+                      <div className="flex justify-between items-center text-xs text-muted mb-2">
                         <span>
-                          {it.name} × {it.qty}
+                          {o.createdAt?.toDate
+                            ? o.createdAt.toDate().toLocaleString("uz-UZ")
+                            : "hozir"}
                         </span>
-                        <span>{formatSum(it.price * it.qty)}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${statusClass}`}>
+                          {statusLabel}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                ))}
+                      {o.items.map((it, idx) => (
+                        <div key={idx} className="text-[13px] flex justify-between py-0.5">
+                          <span>
+                            {it.name} × {it.qty}
+                          </span>
+                          <span>{formatSum(it.price * it.qty)}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between text-[13px] font-bold text-primary mt-1.5 pt-1.5 border-t border-border">
+                        <span>Jami</span>
+                        <span>{formatSum(o.total)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </>
