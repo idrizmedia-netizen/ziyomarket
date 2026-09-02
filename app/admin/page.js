@@ -6,6 +6,7 @@ import Header from "../../components/Header";
 import CartDrawer from "../../components/CartDrawer";
 import StatCard from "../../components/StatCard";
 import CategoryAdminBlock from "../../components/CategoryAdminBlock";
+import AdminManageBlock from "../../components/AdminManageBlock";
 import { useAuth } from "../../context/AuthContext";
 import {
   subscribeCategories,
@@ -78,6 +79,8 @@ export default function AdminPage() {
               <StatCard label="Umumiy tushum" value={formatSum(totalRevenue)} icon={<TrendingUp size={18} />} />
               <StatCard label="Buyurtmalar" value={orders.length} icon={<ShoppingCart size={18} />} />
             </div>
+
+            <AdminManageBlock currentEmail={user.email} />
 
             <div className="bg-white rounded-2xl p-4.5 border border-border mb-6.5">
               <div className="font-bold mb-2.5">Yangi bo&apos;lim qo&apos;shish</div>
