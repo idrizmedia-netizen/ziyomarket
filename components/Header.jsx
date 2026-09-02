@@ -8,7 +8,7 @@ import { useCart } from "../context/CartContext";
 import { signInWithGoogle, signOutUser } from "../lib/auth";
 
 export default function Header({ onCartOpen, search, onSearchChange }) {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isSeller } = useAuth();
   const { cart } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
@@ -67,7 +67,7 @@ export default function Header({ onCartOpen, search, onSearchChange }) {
                 >
                   Profil
                 </Link>
-                {isAdmin && (
+                {isSeller && (
                   <Link
                     href="/admin"
                     className="block px-4 py-2.5 text-sm hover:bg-bg"
