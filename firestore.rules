@@ -39,10 +39,10 @@ service cloud.firestore {
     }
 
     // Admin allow-list: document ID = admin's email.
-    // Only readable by the check above (via exists()); never writable from the client.
+    // Only existing admins can view the list or add/remove other admins.
     match /admins/{email} {
-      allow read: if false;
-      allow write: if false;
+      allow read: if isAdmin();
+      allow write: if isAdmin();
     }
   }
 }
