@@ -54,6 +54,7 @@ export default function CartDrawer({ open, onClose, products }) {
       });
       clearCart();
       onClose();
+      alert("So'rovingiz qabul qilindi! Sotuvchi tayyorlab bergach, xaridingiz profilingizda \"Sotib oldingiz\" deb ko'rinadi.");
     } catch (e) {
       setError(e.message || "Xatolik yuz berdi");
     } finally {
@@ -131,8 +132,12 @@ export default function CartDrawer({ open, onClose, products }) {
                 : "bg-accent text-primaryDark"
             }`}
           >
-            {submitting ? "Yuborilmoqda..." : "Oldim"}
+            {submitting ? "Yuborilmoqda..." : "Buyurtma berish"}
           </button>
+        </div>
+        <div className="text-[11px] text-muted mt-2 text-center">
+          Yetkazib berish xizmati hozircha yo&apos;q — buyurtma tasdiqlangach,
+          do&apos;kondan o&apos;zingiz olib ketasiz.
         </div>
       </div>
     </div>
