@@ -11,6 +11,8 @@ import SellerManageBlock from "../../components/SellerManageBlock";
 import PendingOrdersBlock from "../../components/PendingOrdersBlock";
 import QuickSaleBlock from "../../components/QuickSaleBlock";
 import SellerStatsBlock from "../../components/SellerStatsBlock";
+import AnnouncementsBlock from "../../components/AnnouncementsBlock";
+import AdsManageBlock from "../../components/AdsManageBlock";
 import { useAuth } from "../../context/AuthContext";
 import {
   subscribeCategories,
@@ -96,6 +98,8 @@ export default function AdminPage() {
 
             {isAdmin && (
               <>
+                <AnnouncementsBlock />
+                <AdsManageBlock />
                 <AdminManageBlock currentEmail={user.email} />
                 <SellerManageBlock currentEmail={user.email} />
 
