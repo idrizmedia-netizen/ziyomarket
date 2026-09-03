@@ -9,6 +9,8 @@ import CategoryAdminBlock from "../../components/CategoryAdminBlock";
 import AdminManageBlock from "../../components/AdminManageBlock";
 import SellerManageBlock from "../../components/SellerManageBlock";
 import PendingOrdersBlock from "../../components/PendingOrdersBlock";
+import QuickSaleBlock from "../../components/QuickSaleBlock";
+import SellerStatsBlock from "../../components/SellerStatsBlock";
 import { useAuth } from "../../context/AuthContext";
 import {
   subscribeCategories,
@@ -85,6 +87,12 @@ export default function AdminPage() {
 
             {/* Sotuvchi va admin ikkalasi ham ko'radi va boshqaradi */}
             <PendingOrdersBlock />
+            <QuickSaleBlock products={products} />
+            <SellerStatsBlock
+              fulfilledOrders={fulfilledOrders}
+              mode={isAdmin ? "admin" : "seller"}
+              currentEmail={user.email}
+            />
 
             {isAdmin && (
               <>
