@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { Check, X, Clock } from "lucide-react";
 import { subscribePendingOrders, fulfillOrder, cancelOrder } from "../lib/firestore";
 import { formatSum } from "../lib/utils";
+import { useAuth } from "../context/AuthContext";
 
 export default function PendingOrdersBlock() {
+  const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState("");
@@ -19,7 +21,7 @@ export default function PendingOrdersBlock() {
     setError("");
     setBusyId(orderId);
     try {
-      await fulfillOrder(orderId);
+      await fulfillOrder(orderId, user?.email);
     } catch (e) {
       setError(e.message || "Xatolik yuz berdi");
     } finally {
