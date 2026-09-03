@@ -6,6 +6,8 @@ import { ShoppingCart, User, ShieldCheck, Search, Sparkles } from "lucide-react"
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { signInWithGoogle, signOutUser } from "../lib/auth";
+import InstallButton from "./InstallButton";
+import NotificationBell from "./NotificationBell";
 
 export default function Header({ onCartOpen, search, onSearchChange }) {
   const { user, isAdmin, isSeller } = useAuth();
@@ -47,6 +49,9 @@ export default function Header({ onCartOpen, search, onSearchChange }) {
             </span>
           )}
         </button>
+
+        <InstallButton />
+        <NotificationBell />
 
         {user ? (
           <div className="relative">
