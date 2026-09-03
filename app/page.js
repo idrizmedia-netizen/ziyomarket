@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import CategorySection from "../components/CategorySection";
+import CategoryPicker from "../components/CategoryPicker";
 import AnnouncementBanner from "../components/AnnouncementBanner";
 import AdCarousel from "../components/AdCarousel";
 import { subscribeCategories, subscribeProducts } from "../lib/firestore";
@@ -60,6 +61,10 @@ export default function HomePage() {
           <div className="text-muted text-center py-10">
             Hozircha bo'limlar qo'shilmagan.
           </div>
+        )}
+
+        {!loading && !search.trim() && (
+          <CategoryPicker categories={categories} products={products} />
         )}
 
         {!loading &&
