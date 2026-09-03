@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Package, TrendingUp, ShoppingCart } from "lucide-react";
+import {
+  Package,
+  TrendingUp,
+  ShoppingCart,
+  ClipboardList,
+  BarChart3,
+  Boxes,
+  Settings,
+} from "lucide-react";
 import Header from "../../components/Header";
 import CartDrawer from "../../components/CartDrawer";
 import StatCard from "../../components/StatCard";
@@ -31,6 +39,7 @@ export default function AdminPage() {
   const [newCatName, setNewCatName] = useState("");
   const [search, setSearch] = useState("");
   const [cartOpen, setCartOpen] = useState(false);
+  const [tab, setTab] = useState("orders");
 
   useEffect(() => {
     const unsubCats = subscribeCategories(setCategories);
@@ -53,6 +62,13 @@ export default function AdminPage() {
   );
   const totalQty = sales.reduce((s, r) => s + r.qty, 0);
   const totalRevenue = sales.reduce((s, r) => s + r.qty * r.price, 0);
+
+  const tabs = [
+    { id: "orders", label: "Buyurtmalar", icon: ClipboardList },
+    { id: "stats", label: "Statistika", icon: BarChart3 },
+    ...(isAdmin ? [{ id: "products", label: "Mahsulotlar", icon: Boxes }] : []),
+    ...(isAdmin ? [{ id: "settings", label: "Sozlamalar", icon: Settings }] : []),
+  ];
 
   return (
     <div className="min-h-screen">
@@ -81,28 +97,77 @@ export default function AdminPage() {
           <>
             <div className="font-display text-2xl mb-5">Boshqaruv paneli</div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-8">
-              <StatCard label="Sotilgan mahsulot" value={`${totalQty} ta`} icon={<Package size={18} />} />
-              <StatCard label="Umumiy tushum" value={formatSum(totalRevenue)} icon={<TrendingUp size={18} />} />
-              <StatCard label="Yakunlangan buyurtmalar" value={fulfilledOrders.length} icon={<ShoppingCart size={18} />} />
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+              {tabs.map((t) => {
+                const Icon = t.icon;
+                const active = tab === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => setTab(t.id)}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap ${
+                      active ? "bg-primary text-white" : "bg-white border border-border text-ink"
+                    }`}
+                  >
+                    <Icon size={15} />
+                    {t.label}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Sotuvchi va admin ikkalasi ham ko'radi va boshqaradi */}
-            <PendingOrdersBlock />
-            <QuickSaleBlock products={products} />
-            <SellerStatsBlock
-              fulfilledOrders={fulfilledOrders}
-              mode={isAdmin ? "admin" : "seller"}
-              currentEmail={user.email}
-            />
-
-            {isAdmin && (
+            {tab === "orders" && (
               <>
-                <AnnouncementsBlock />
-                <AdsManageBlock />
-                <AdminManageBlock currentEmail={user.email} />
-                <SellerManageBlock currentEmail={user.email} />
+                <PendingOrdersBlock />
+                <QuickSaleBlock products={products} />
+              </>
+            )}
 
+            {tab === "stats" && (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-8">
+                  <StatCard label="Sotilgan mahsulot" value={`${totalQty} ta`} icon={<Package size={18} />} />
+                  <StatCard label="Umumiy tushum" value={formatSum(totalRevenue)} icon={<TrendingUp size={18} />} />
+                  <StatCard label="Yakunlangan buyurtmalar" value={fulfilledOrders.length} icon={<ShoppingCart size={18} />} />
+                </div>
+
+                <SellerStatsBlock
+                  fulfilledOrders={fulfilledOrders}
+                  mode={isAdmin ? "admin" : "seller"}
+                  currentEmail={user.email}
+                />
+
+                <div className="font-display text-lg mt-8 mb-3">Sotuvlar tarixi</div>
+                {sales.length === 0 ? (
+                  <div className="text-muted text-sm">Hali yakunlangan sotuv bo&apos;lmagan.</div>
+                ) : (
+                  <div className="bg-white rounded-xl border border-border overflow-hidden">
+                    <div className="grid grid-cols-[1.4fr_1fr_0.6fr_0.8fr_1fr] px-3.5 py-2.5 text-xs font-bold text-muted border-b border-border">
+                      <span>Mahsulot</span>
+                      <span>Bo&apos;lim</span>
+                      <span>Soni</span>
+                      <span>Summasi</span>
+                      <span>Xaridor</span>
+                    </div>
+                    {[...sales].reverse().map((r, idx) => (
+                      <div
+                        key={idx}
+                        className="grid grid-cols-[1.4fr_1fr_0.6fr_0.8fr_1fr] px-3.5 py-2.5 text-[13px] border-b border-border"
+                      >
+                        <span>{r.name}</span>
+                        <span className="text-muted">{r.categoryName}</span>
+                        <span>{r.qty}</span>
+                        <span>{formatSum(r.qty * r.price)}</span>
+                        <span className="text-muted">{r.buyer}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {tab === "products" && isAdmin && (
+              <>
                 <div className="bg-white rounded-2xl p-4.5 border border-border mb-6.5">
                   <div className="font-bold mb-2.5">Yangi bo&apos;lim qo&apos;shish</div>
                   <div className="flex gap-2.5">
@@ -134,31 +199,13 @@ export default function AdminPage() {
               </>
             )}
 
-            <div className="font-display text-lg mt-8 mb-3">Sotuvlar tarixi</div>
-            {sales.length === 0 ? (
-              <div className="text-muted text-sm">Hali yakunlangan sotuv bo&apos;lmagan.</div>
-            ) : (
-              <div className="bg-white rounded-xl border border-border overflow-hidden">
-                <div className="grid grid-cols-[1.4fr_1fr_0.6fr_0.8fr_1fr] px-3.5 py-2.5 text-xs font-bold text-muted border-b border-border">
-                  <span>Mahsulot</span>
-                  <span>Bo&apos;lim</span>
-                  <span>Soni</span>
-                  <span>Summasi</span>
-                  <span>Xaridor</span>
-                </div>
-                {[...sales].reverse().map((r, idx) => (
-                  <div
-                    key={idx}
-                    className="grid grid-cols-[1.4fr_1fr_0.6fr_0.8fr_1fr] px-3.5 py-2.5 text-[13px] border-b border-border"
-                  >
-                    <span>{r.name}</span>
-                    <span className="text-muted">{r.categoryName}</span>
-                    <span>{r.qty}</span>
-                    <span>{formatSum(r.qty * r.price)}</span>
-                    <span className="text-muted">{r.buyer}</span>
-                  </div>
-                ))}
-              </div>
+            {tab === "settings" && isAdmin && (
+              <>
+                <AnnouncementsBlock />
+                <AdsManageBlock />
+                <AdminManageBlock currentEmail={user.email} />
+                <SellerManageBlock currentEmail={user.email} />
+              </>
             )}
           </>
         )}
