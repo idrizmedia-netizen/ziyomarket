@@ -4,9 +4,7 @@ import { useCart } from "../context/CartContext";
 import ProductImage from "./ProductImage";
 import { formatSum } from "../lib/utils";
 
-export default function ProductCard({ product }) {
-  // Bu yerda komponent kodingiz davom etadi...
-}
+
 export default function ProductCard({ product }) {
   const { cart, addToCart } = useCart();
   const inCart = cart.find((i) => i.productId === product.id);
