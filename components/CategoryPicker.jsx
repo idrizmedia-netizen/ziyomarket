@@ -29,10 +29,10 @@ export default function CategoryPicker({ categories, products }) {
             key={cat.id}
             onClick={() => scrollTo(cat.id)}
             style={{ background: `linear-gradient(135deg, ${color.from}, ${color.to})` }}
-            className="rounded-2xl p-5 text-left text-white flex flex-col justify-between min-h-[110px] sm:min-h-[130px] transition-transform active:scale-95"
+            className="rounded-xl px-4 py-3.5 text-left text-white flex items-center justify-between gap-2 min-h-[64px] transition-transform active:scale-95"
           >
-            <div className="font-display text-lg sm:text-xl leading-tight">{cat.name}</div>
-            <div className="text-xs sm:text-sm text-white/75 mt-2">{count} ta mahsulot</div>
+            <div className="font-display text-base sm:text-lg leading-tight">{cat.name}</div>
+            <div className="text-[11px] text-white/75 whitespace-nowrap">{count} ta</div>
           </button>
         );
       })}
