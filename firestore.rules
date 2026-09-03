@@ -35,13 +35,18 @@ service cloud.firestore {
          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['qty']));
     }
 
-    // Orders: a signed-in user can create their own order (status must start
-    // as 'pending', stock is NOT touched yet). Buyer can read their own
-    // orders; sellers/admins can read and update (fulfill/cancel) any order.
+    // Orders: a signed-in user can create their own pending order (app orqali
+    // buyurtma). Sotuvchi/admin esa do'konda darhol yakunlangan (POS) sotuv
+    // yozib qo'ya oladi. Buyer o'z buyurtmalarini, sotuvchi/admin barchasini
+    // o'qiy oladi; yakunlash/bekor qilish faqat sotuvchi/admin qo'lida.
     match /orders/{orderId} {
-      allow create: if isSignedIn() &&
-        request.resource.data.buyerUid == request.auth.uid &&
-        request.resource.data.status == 'pending';
+      allow create: if
+        (isSignedIn() &&
+         request.resource.data.buyerUid == request.auth.uid &&
+         request.resource.data.status == 'pending') ||
+        (isSeller() &&
+         request.resource.data.status == 'fulfilled' &&
+         request.resource.data.source == 'pos');
       allow read: if isSignedIn() &&
         (resource.data.buyerUid == request.auth.uid || isSeller());
       allow update: if isSeller();
