@@ -1,14 +1,12 @@
 "use client";
 
+import { useCart } from "../context/CartContext";
 import ProductImage from "./ProductImage";
 import { formatSum } from "../lib/utils";
-import { useCart } from "../context/CartContext";
-"use client";
 
-import ProductImage from "./ProductImage";
-import { formatSum } from "../lib/utils";
-import { useCart } from "../context/CartContext";
-
+export default function ProductCard({ product }) {
+  // Bu yerda komponent kodingiz davom etadi...
+}
 export default function ProductCard({ product }) {
   const { cart, addToCart } = useCart();
   const inCart = cart.find((i) => i.productId === product.id);
