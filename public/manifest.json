@@ -1,0 +1,14 @@
+{
+  "name": "ZiyoMarket",
+  "short_name": "ZiyoMarket",
+  "description": "Ishonchli sotuvchilar, qulay narxlar — ZiyoMarket'da.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FAF7F1",
+  "theme_color": "#233457",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
