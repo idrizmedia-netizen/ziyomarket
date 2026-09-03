@@ -1,16 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, Pencil, Check } from "lucide-react";
+import { Trash2, Pencil, Check, Upload, Loader2 } from "lucide-react";
 import ProductImage from "./ProductImage";
 import { formatSum } from "../lib/utils";
 import { addProduct, updateProduct, deleteProduct, deleteCategory } from "../lib/firestore";
+import { uploadImage } from "../lib/imgbb";
 
 export default function CategoryAdminBlock({ category, products }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", image: "", price: "", qty: "" });
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ price: "", qty: "" });
+
+  async function handleFileChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError("");
+    setUploading(true);
+    try {
+      const url = await uploadImage(file);
+      setForm((f) => ({ ...f, image: url }));
+    } catch (err) {
+      setUploadError(err.message || "Rasm yuklashda xatolik");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function submit() {
     if (!form.name.trim() || !form.price || !form.qty) return;
@@ -50,19 +68,34 @@ export default function CategoryAdminBlock({ category, products }) {
       </div>
 
       {open && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-3.5 bg-bg p-3 rounded-lg">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-3.5 bg-bg p-3 rounded-lg items-start">
           <input
             placeholder="Nomi"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             className="border border-border rounded-lg px-3 py-2 text-sm"
           />
-          <input
-            placeholder="Rasm URL"
-            value={form.image}
-            onChange={(e) => setForm({ ...form, image: e.target.value })}
-            className="border border-border rounded-lg px-3 py-2 text-sm"
-          />
+
+          <div>
+            <label className="flex items-center justify-center gap-1.5 border border-dashed border-border rounded-lg px-3 py-2 text-xs cursor-pointer bg-white">
+              {uploading ? (
+                <>
+                  <Loader2 size={13} className="animate-spin" /> Yuklanmoqda...
+                </>
+              ) : form.image ? (
+                <>
+                  <Check size={13} className="text-success" /> Rasm tanlandi
+                </>
+              ) : (
+                <>
+                  <Upload size={13} /> Rasm tanlash
+                </>
+              )}
+              <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+            </label>
+            {uploadError && <div className="text-danger text-[10px] mt-1">{uploadError}</div>}
+          </div>
+
           <input
             placeholder="Narxi"
             type="number"
@@ -77,9 +110,17 @@ export default function CategoryAdminBlock({ category, products }) {
             onChange={(e) => setForm({ ...form, qty: e.target.value })}
             className="border border-border rounded-lg px-3 py-2 text-sm"
           />
+
+          {form.image && (
+            <div className="col-span-2 sm:col-span-4 w-24">
+              <ProductImage src={form.image} alt="Ko'rinish" height={70} />
+            </div>
+          )}
+
           <button
             onClick={submit}
-            className="col-span-2 sm:col-span-4 bg-primary text-white rounded-lg py-2 text-sm font-semibold"
+            disabled={uploading}
+            className="col-span-2 sm:col-span-4 bg-primary text-white rounded-lg py-2 text-sm font-semibold disabled:opacity-60"
           >
             Saqlash
           </button>
