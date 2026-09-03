@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import CategorySection from "../components/CategorySection";
+import AnnouncementBanner from "../components/AnnouncementBanner";
+import AdCarousel from "../components/AdCarousel";
 import { subscribeCategories, subscribeProducts } from "../lib/firestore";
 
 export default function HomePage() {
@@ -40,6 +42,9 @@ export default function HomePage() {
       />
 
       <div className="px-5 py-6 max-w-[1100px] mx-auto pb-16">
+        <AnnouncementBanner />
+        <AdCarousel />
+
         <div className="bg-gradient-to-br from-primary to-primaryDark rounded-2xl p-9 text-white mb-8">
           <div className="font-display text-3xl mb-2 max-w-lg">
             Kerakli narsangizni ZiyoMarket'dan toping
