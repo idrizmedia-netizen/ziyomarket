@@ -4,6 +4,10 @@ import { CartProvider } from "../context/CartContext";
 import ServiceWorkerRegister from "../components/ServiceWorkerRegister";
 import MobileNav from "../components/MobileNav";
 
+// Firebase faqat brauzerda ishlaydi — shuning uchun sahifalar build vaqtida
+// oldindan statik qilib tayyorlanmasin, har doim so'rov kelganda ishlasin.
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "ZiyoMarket",
   description: "Ishonchli sotuvchilar, qulay narxlar — ZiyoMarket'da.",
