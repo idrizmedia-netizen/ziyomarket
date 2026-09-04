@@ -54,7 +54,10 @@ export default function QuickSaleBlock({ products }) {
     })
     .filter(Boolean);
 
-  const subtotal = detailed.reduce((s, i) => s + i.product.price * i.qty, 0);
+  const subtotal = detailed.reduce(
+    (s, i) => s + (i.product.discountPrice || i.product.price) * i.qty,
+    0
+  );
   const totalCount = posCart.reduce((s, i) => s + i.qty, 0);
   const finalTotal = Math.max(0, subtotal - Number(discount || 0) - Number(bonus || 0));
 
@@ -70,7 +73,7 @@ export default function QuickSaleBlock({ products }) {
           productId: i.product.id,
           name: i.product.name,
           categoryName: i.product.categoryName,
-          price: i.product.price,
+          price: i.product.discountPrice || i.product.price,
           qty: i.qty,
         })),
         discount: Number(discount || 0),
@@ -124,7 +127,16 @@ export default function QuickSaleBlock({ products }) {
             <div key={p.id} className="border border-border rounded-lg p-2">
               <ProductImage src={p.image} alt={p.name} height={80} />
               <div className="text-xs font-semibold mt-1.5 leading-tight">{p.name}</div>
-              <div className="text-xs text-primary font-bold">{formatSum(p.price)}</div>
+              {p.discountPrice ? (
+                <div className="leading-tight">
+                  <span className="text-[10px] text-muted line-through mr-1">
+                    {formatSum(p.price)}
+                  </span>
+                  <span className="text-xs text-danger font-bold">{formatSum(p.discountPrice)}</span>
+                </div>
+              ) : (
+                <div className="text-xs text-primary font-bold">{formatSum(p.price)}</div>
+              )}
               <div className="text-[10px] text-muted mb-1">{Math.max(remaining, 0)} ta bor</div>
               {inCart ? (
                 <div className="flex items-center justify-between">
@@ -191,7 +203,7 @@ export default function QuickSaleBlock({ products }) {
                   <span>
                     {i.product.name} × {i.qty}
                   </span>
-                  <span>{formatSum(i.product.price * i.qty)}</span>
+                  <span>{formatSum((i.product.discountPrice || i.product.price) * i.qty)}</span>
                 </div>
               ))}
             </div>
