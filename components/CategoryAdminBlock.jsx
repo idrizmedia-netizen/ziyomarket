@@ -9,11 +9,18 @@ import { uploadImage } from "../lib/imgbb";
 
 export default function CategoryAdminBlock({ category, products }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", image: "", price: "", qty: "" });
+  const [form, setForm] = useState({
+    name: "",
+    image: "",
+    description: "",
+    price: "",
+    discountPrice: "",
+    qty: "",
+  });
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ price: "", qty: "" });
+  const [editForm, setEditForm] = useState({ price: "", discountPrice: "", qty: "" });
 
   async function handleFileChange(e) {
     const file = e.target.files?.[0];
@@ -33,18 +40,19 @@ export default function CategoryAdminBlock({ category, products }) {
   async function submit() {
     if (!form.name.trim() || !form.price || !form.qty) return;
     await addProduct(category.id, category.name, form);
-    setForm({ name: "", image: "", price: "", qty: "" });
+    setForm({ name: "", image: "", description: "", price: "", discountPrice: "", qty: "" });
     setOpen(false);
   }
 
   function startEdit(p) {
     setEditingId(p.id);
-    setEditForm({ price: p.price, qty: p.qty });
+    setEditForm({ price: p.price, discountPrice: p.discountPrice || "", qty: p.qty });
   }
 
   async function saveEdit(productId) {
     await updateProduct(productId, {
       price: Number(editForm.price),
+      discountPrice: editForm.discountPrice ? Number(editForm.discountPrice) : null,
       qty: Number(editForm.qty),
     });
     setEditingId(null);
@@ -111,6 +119,22 @@ export default function CategoryAdminBlock({ category, products }) {
             className="border border-border rounded-lg px-3 py-2 text-sm"
           />
 
+          <input
+            placeholder="Chegirmali narx (ixtiyoriy)"
+            type="number"
+            value={form.discountPrice}
+            onChange={(e) => setForm({ ...form, discountPrice: e.target.value })}
+            className="col-span-2 sm:col-span-2 border border-border rounded-lg px-3 py-2 text-sm"
+          />
+
+          <textarea
+            placeholder="Tavsif (ixtiyoriy)"
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            rows={2}
+            className="col-span-2 sm:col-span-2 border border-border rounded-lg px-3 py-2 text-sm"
+          />
+
           {form.image && (
             <div className="col-span-2 sm:col-span-4 w-24">
               <ProductImage src={form.image} alt="Ko'rinish" height={70} />
@@ -147,6 +171,13 @@ export default function CategoryAdminBlock({ category, products }) {
                   />
                   <input
                     type="number"
+                    value={editForm.discountPrice}
+                    onChange={(e) => setEditForm({ ...editForm, discountPrice: e.target.value })}
+                    className="border border-border rounded px-2 py-1 text-xs"
+                    placeholder="Chegirmali narx"
+                  />
+                  <input
+                    type="number"
                     value={editForm.qty}
                     onChange={(e) => setEditForm({ ...editForm, qty: e.target.value })}
                     className="border border-border rounded px-2 py-1 text-xs"
@@ -161,7 +192,18 @@ export default function CategoryAdminBlock({ category, products }) {
                 </div>
               ) : (
                 <>
-                  <div className="text-xs text-primary font-bold">{formatSum(p.price)}</div>
+                  {p.discountPrice ? (
+                    <div>
+                      <span className="text-[10px] text-muted line-through mr-1">
+                        {formatSum(p.price)}
+                      </span>
+                      <span className="text-xs text-danger font-bold">
+                        {formatSum(p.discountPrice)}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-primary font-bold">{formatSum(p.price)}</div>
+                  )}
                   <div className="flex justify-between items-center mt-1">
                     <span className="text-[11px] text-muted">{p.qty} ta qoldi</span>
                     <div className="flex gap-2">
