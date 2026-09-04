@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Megaphone } from "lucide-react";
 import { subscribeAds, subscribeCarouselSettings } from "../lib/firestore";
 
 function isAdActive(ad) {
@@ -43,39 +43,66 @@ export default function AdCarousel() {
 
   const current = activeAds[index];
 
-  return (
-    <div className="relative rounded-2xl overflow-hidden mb-8 bg-[#F0EBE0]">
+  const content = (
+    <>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={current.image}
         alt={current.description || "Reklama"}
-        className="w-full h-[180px] sm:h-[260px] object-cover block"
+        className="w-full h-[210px] sm:h-[340px] md:h-[400px] object-cover block"
       />
+
+      <span className="absolute top-3 right-3 bg-white/90 text-ink text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+        <Megaphone size={11} />
+        Reklama
+      </span>
+
       {current.description && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent text-white px-5 py-4 text-sm sm:text-base font-medium">
-          {current.description}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent text-white px-6 py-6 sm:py-8">
+          <div className="text-lg sm:text-2xl md:text-3xl font-display font-bold max-w-lg leading-snug">
+            {current.description}
+          </div>
         </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden mb-8 bg-[#F0EBE0] shadow-sm">
+      {current.link ? (
+        <a
+          href={current.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block relative"
+        >
+          {content}
+        </a>
+      ) : (
+        <div className="relative">{content}</div>
       )}
 
       {activeAds.length > 1 && (
         <>
           <button
             onClick={() => setIndex((i) => (i - 1 + activeAds.length) % activeAds.length)}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1.5"
+            className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/85 hover:bg-white rounded-full p-2 shadow"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={20} />
           </button>
           <button
             onClick={() => setIndex((i) => (i + 1) % activeAds.length)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1.5"
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/85 hover:bg-white rounded-full p-2 shadow"
           >
-            <ChevronRight size={18} />
+            <ChevronRight size={20} />
           </button>
-          <div className="absolute bottom-2 right-3 flex gap-1.5">
+          <div className="absolute bottom-3 right-4 flex gap-1.5">
             {activeAds.map((_, i) => (
               <span
                 key={i}
-                className={`w-1.5 h-1.5 rounded-full ${i === index ? "bg-white" : "bg-white/40"}`}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === index ? "w-5 bg-white" : "w-1.5 bg-white/50"
+                }`}
               />
             ))}
           </div>
