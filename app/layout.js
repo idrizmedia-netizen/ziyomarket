@@ -32,9 +32,9 @@ export default function RootLayout({ children }) {
       <body>
         <AuthProvider>
           <CartProvider>{children}</CartProvider>
+          <MobileNav />
         </AuthProvider>
         <ServiceWorkerRegister />
-        <MobileNav />
       </body>
     </html>
   );
