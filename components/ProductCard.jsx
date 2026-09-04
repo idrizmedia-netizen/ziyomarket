@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Star } from "lucide-react";
+import { Star, ShoppingCart } from "lucide-react";
 import ProductImage from "./ProductImage";
 import ProductDetailModal from "./ProductDetailModal";
 import { formatSum } from "../lib/utils";
@@ -14,64 +14,73 @@ export default function ProductCard({ product }) {
   const remaining = product.qty - (inCart ? inCart.qty : 0);
   const lowStock = remaining > 0 && remaining <= 3;
   const avg = product.ratingCount ? product.ratingSum / product.ratingCount : 0;
+  const discountPct =
+    product.discountPrice && product.price
+      ? Math.round(100 - (product.discountPrice / product.price) * 100)
+      : 0;
 
   return (
     <>
-      <div className="bg-white rounded-2xl p-3 border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col gap-2 relative overflow-hidden">
-        <div className="relative cursor-pointer" onClick={() => setShowDetail(true)}>
+      <div className="bg-white rounded-2xl p-2.5 border border-border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col gap-2 relative overflow-hidden group">
+        <div
+          className="relative cursor-pointer rounded-xl overflow-hidden"
+          onClick={() => setShowDetail(true)}
+        >
           <ProductImage src={product.image} alt={product.name} />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
           {lowStock && (
-            <span className="absolute top-1.5 left-1.5 bg-danger text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <span className="absolute top-2 left-2 bg-danger text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">
               Kam qoldi
             </span>
           )}
-          {product.discountPrice && (
-            <span className="absolute top-1.5 right-1.5 bg-danger text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-              Chegirma
+          {discountPct > 0 && (
+            <span className="absolute top-2 right-2 bg-danger text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">
+              -{discountPct}%
             </span>
           )}
         </div>
 
         <div
-          className="text-sm font-semibold leading-snug line-clamp-2 cursor-pointer"
+          className="text-sm font-semibold leading-snug line-clamp-2 cursor-pointer px-0.5"
           onClick={() => setShowDetail(true)}
         >
           {product.name}
         </div>
 
         {product.ratingCount > 0 && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 px-0.5">
             <Star size={12} className="text-accent fill-accent" />
-            <span className="text-[11px] text-muted">
+            <span className="text-[11px] text-muted font-medium">
               {avg.toFixed(1)} ({product.ratingCount})
             </span>
           </div>
         )}
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-0.5">
           {product.discountPrice ? (
-            <span className="flex items-baseline gap-1.5">
+            <span className="flex flex-col leading-tight">
               <span className="text-[11px] text-muted line-through">{formatSum(product.price)}</span>
-              <span className="text-[15px] font-bold text-danger">
+              <span className="text-base font-extrabold text-danger">
                 {formatSum(product.discountPrice)}
               </span>
             </span>
           ) : (
-            <span className="text-[15px] font-bold text-primary">{formatSum(product.price)}</span>
+            <span className="text-base font-extrabold text-primary">{formatSum(product.price)}</span>
           )}
-          <span className="text-[11px] text-muted">{Math.max(remaining, 0)} ta</span>
+          <span className="text-[11px] text-muted whitespace-nowrap">{Math.max(remaining, 0)} ta</span>
         </div>
 
         <button
           disabled={remaining <= 0}
           onClick={() => addToCart(product.id, product.qty)}
-          className={`mt-0.5 rounded-xl py-2.5 text-[13px] font-bold transition-colors ${
+          className={`flex items-center justify-center gap-1.5 rounded-full py-2.5 text-[13px] font-bold transition-all ${
             remaining <= 0
               ? "bg-[#E4E0D5] text-muted cursor-not-allowed"
-              : "bg-primary text-white hover:bg-primaryDark"
+              : "bg-primary text-white hover:bg-primaryDark active:scale-95"
           }`}
         >
-          {remaining <= 0 ? "Tugagan" : "Savatchaga qo'shish"}
+          <ShoppingCart size={14} />
+          {remaining <= 0 ? "Tugagan" : "Savatchaga"}
         </button>
       </div>
 
