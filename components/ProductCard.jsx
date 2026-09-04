@@ -1,45 +1,41 @@
 "use client";
 
-import React from "react";
 import ProductImage from "./ProductImage";
 import { formatSum } from "../lib/utils";
 import { useCart } from "../context/CartContext";
 
 export default function ProductCard({ product }) {
-  const { addToCart } = useCart();
-
-  if (!product) return null;
+  const { cart, addToCart } = useCart();
+  const inCart = cart.find((i) => i.productId === product.id);
+  const remaining = product.qty - (inCart ? inCart.qty : 0);
+  const lowStock = remaining > 0 && remaining <= 3;
 
   return (
-    <div className="border rounded-lg p-4 shadow-sm hover:shadow-md transition bg-white flex flex-col justify-between">
-      <div className="relative w-full h-48 mb-3">
-        <ProductImage src={product.image} alt={product.title || product.name} />
-      </div>
-
-      <div className="flex-1 flex flex-col justify-between">
-        <div>
-          <h3 className="font-semibold text-lg text-gray-800 line-clamp-1">
-            {product.title || product.name}
-          </h3>
-          {product.description && (
-            <p className="text-gray-500 text-sm mt-1 line-clamp-2">
-              {product.description}
-            </p>
-          )}
-        </div>
-
-        <div className="mt-4 flex items-center justify-between">
-          <span className="font-bold text-lg text-blue-600">
-            {formatSum ? formatSum(product.price) : `${product.price} so'm`}
+    <div className="bg-white rounded-2xl p-3 border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col gap-2 relative overflow-hidden">
+      <div className="relative">
+        <ProductImage src={product.image} alt={product.name} />
+        {lowStock && (
+          <span className="absolute top-1.5 left-1.5 bg-danger text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            Kam qoldi
           </span>
-          <button
-            onClick={() => addToCart(product)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition"
-          >
-            Savatga
-          </button>
-        </div>
+        )}
       </div>
+      <div className="text-sm font-semibold leading-snug line-clamp-2">{product.name}</div>
+      <div className="flex items-center justify-between">
+        <span className="text-[15px] font-bold text-primary">{formatSum(product.price)}</span>
+        <span className="text-[11px] text-muted">{Math.max(remaining, 0)} ta</span>
+      </div>
+      <button
+        disabled={remaining <= 0}
+        onClick={() => addToCart(product.id, product.qty)}
+        className={`mt-0.5 rounded-xl py-2.5 text-[13px] font-bold transition-colors ${
+          remaining <= 0
+            ? "bg-[#E4E0D5] text-muted cursor-not-allowed"
+            : "bg-primary text-white hover:bg-primaryDark"
+        }`}
+      >
+        {remaining <= 0 ? "Tugagan" : "Savatchaga qo'shish"}
+      </button>
     </div>
   );
 }
