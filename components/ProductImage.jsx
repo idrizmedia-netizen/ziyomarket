@@ -22,6 +22,8 @@ export default function ProductImage({ src, alt, height = 150 }) {
     <img
       src={src}
       alt={alt}
+      loading="lazy"
+      decoding="async"
       onError={() => setBroken(true)}
       style={{ height }}
       className="w-full object-cover rounded-lg block"
