@@ -13,7 +13,7 @@ import {
 
 export default function AdsManageBlock() {
   const [ads, setAds] = useState([]);
-  const [form, setForm] = useState({ image: "", description: "", startDate: "", endDate: "" });
+  const [form, setForm] = useState({ image: "", description: "", link: "", startDate: "", endDate: "" });
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [interval, setIntervalValue] = useState(5);
@@ -48,7 +48,7 @@ export default function AdsManageBlock() {
       return;
     }
     await addAd(form);
-    setForm({ image: "", description: "", startDate: "", endDate: "" });
+    setForm({ image: "", description: "", link: "", startDate: "", endDate: "" });
   }
 
   async function handleIntervalSave() {
@@ -93,6 +93,14 @@ export default function AdsManageBlock() {
           onChange={(e) => setForm({ ...form, description: e.target.value })}
           className="w-full border border-border rounded-lg px-3 py-2 text-sm mb-2.5"
           rows={2}
+        />
+
+        <input
+          type="url"
+          placeholder="Havola (ixtiyoriy) — masalan: https://t.me/ziyomarket"
+          value={form.link}
+          onChange={(e) => setForm({ ...form, link: e.target.value })}
+          className="w-full border border-border rounded-lg px-3 py-2 text-sm mb-2.5"
         />
 
         <div className="grid grid-cols-2 gap-2.5 mb-2.5">
@@ -155,6 +163,7 @@ export default function AdsManageBlock() {
               <div className="text-xs font-medium truncate">{ad.description || "(tavsifsiz)"}</div>
               <div className="text-[11px] text-muted">
                 {ad.startDate || "boshidan"} — {ad.endDate || "muddatsiz"}
+                {ad.link && " · havola bor"}
               </div>
             </div>
             <button onClick={() => deleteAd(ad.id)}>
