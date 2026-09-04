@@ -53,7 +53,18 @@ export default function HomePage() {
           </div>
         </div>
 
-        {loading && <div className="text-muted text-center py-10">Yuklanmoqda...</div>}
+        {loading && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl p-3 border border-border animate-pulse">
+                <div className="w-full h-[150px] rounded-lg bg-[#F0EBE0]" />
+                <div className="h-3 bg-[#F0EBE0] rounded mt-3 w-4/5" />
+                <div className="h-3 bg-[#F0EBE0] rounded mt-2 w-2/5" />
+                <div className="h-8 bg-[#F0EBE0] rounded-full mt-3" />
+              </div>
+            ))}
+          </div>
+        )}
 
         {!loading && categories.length === 0 && (
           <div className="text-muted text-center py-10">
