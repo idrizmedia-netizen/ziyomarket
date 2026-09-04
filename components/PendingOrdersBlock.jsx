@@ -72,7 +72,7 @@ export default function PendingOrdersBlock() {
                     <span>
                       {it.name} × {it.qty}
                     </span>
-                    <span className="text-muted">{it.categoryName}</span>
+                    <span className="text-muted">{formatSum(it.price * it.qty)}</span>
                   </div>
                 ))}
               </div>
