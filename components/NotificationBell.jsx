@@ -74,7 +74,7 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-11 bg-white text-ink rounded-2xl shadow-2xl w-80 max-w-[88vw] overflow-hidden z-40 border border-border">
+        <div className="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 top-16 sm:top-11 bg-white text-ink rounded-2xl shadow-2xl sm:w-80 max-w-full sm:max-w-[88vw] overflow-hidden z-40 border border-border">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-bg">
             <div className="flex items-center gap-2 font-bold text-sm">
               <Megaphone size={15} className="text-primary" />
