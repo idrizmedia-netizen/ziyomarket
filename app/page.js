@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
 import FavoritesDrawer from "../components/FavoritesDrawer";
@@ -8,12 +9,16 @@ import CategorySection from "../components/CategorySection";
 import CategoryPicker from "../components/CategoryPicker";
 import AdCarousel from "../components/AdCarousel";
 import ProductRow from "../components/ProductRow";
-import { ArrowUpDown, Flame, Sparkles } from "lucide-react";
+import ProductDetailModal from "../components/ProductDetailModal";
+import { ArrowUpDown, Flame, Sparkles, Zap } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
+import { useAuth } from "../context/AuthContext";
 import { subscribeCategories, subscribeProducts } from "../lib/firestore";
 
 export default function HomePage() {
   const { t } = useLanguage();
+  const { isSeller } = useAuth();
+  const searchParams = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
@@ -21,6 +26,8 @@ export default function HomePage() {
   const [cartOpen, setCartOpen] = useState(false);
   const [favoritesOpen, setFavoritesOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [deepLinkProduct, setDeepLinkProduct] = useState(null);
+  const [deepLinkChecked, setDeepLinkChecked] = useState(false);
 
   useEffect(() => {
     const unsubCats = subscribeCategories(setCategories);
@@ -33,6 +40,16 @@ export default function HomePage() {
       unsubProds();
     };
   }, []);
+
+  useEffect(() => {
+    if (loading || deepLinkChecked) return;
+    const productId = searchParams.get("product");
+    if (productId) {
+      const found = products.find((p) => p.id === productId);
+      if (found) setDeepLinkProduct(found);
+    }
+    setDeepLinkChecked(true);
+  }, [loading, products, searchParams, deepLinkChecked]);
 
   const searched = search.trim()
     ? products.filter((p) =>
@@ -160,6 +177,18 @@ export default function HomePage() {
         onClose={() => setFavoritesOpen(false)}
         products={products}
       />
+      {deepLinkProduct && (
+        <ProductDetailModal product={deepLinkProduct} onClose={() => setDeepLinkProduct(null)} />
+      )}
+      {isSeller && (
+        <a
+          href="/admin"
+          className="fixed bottom-20 sm:bottom-6 right-5 z-30 flex items-center gap-2 bg-accent text-primaryDark rounded-full px-4 py-3 shadow-lg font-bold text-sm"
+        >
+          <Zap size={16} />
+          Tezkor sotuv
+        </a>
+      )}
     </div>
   );
 }
