@@ -17,12 +17,17 @@ export function AuthProvider({ children }) {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser?.email) {
-        const [admin, seller] = await Promise.all([
-          checkIsAdmin(firebaseUser.email),
-          checkIsSeller(firebaseUser.email),
-        ]);
-        setIsAdmin(admin);
-        setIsSeller(admin || seller);
+        try {
+          const [admin, seller] = await Promise.all([
+            checkIsAdmin(firebaseUser.email),
+            checkIsSeller(firebaseUser.email),
+          ]);
+          setIsAdmin(admin);
+          setIsSeller(admin || seller);
+        } catch (e) {
+          setIsAdmin(false);
+          setIsSeller(false);
+        }
       } else {
         setIsAdmin(false);
         setIsSeller(false);
