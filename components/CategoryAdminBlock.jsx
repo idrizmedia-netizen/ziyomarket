@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, Pencil, Check, Upload, Loader2 } from "lucide-react";
+import { Trash2, Pencil, Check, Upload, Loader2, X } from "lucide-react";
 import ProductImage from "./ProductImage";
 import { formatSum } from "../lib/utils";
 import { addProduct, updateProduct, deleteProduct, deleteCategory } from "../lib/firestore";
@@ -19,8 +19,10 @@ export default function CategoryAdminBlock({ category, products }) {
   });
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ price: "", discountPrice: "", qty: "" });
+  const [editForm, setEditForm] = useState({});
+  const [editUploading, setEditUploading] = useState(false);
 
   async function handleFileChange(e) {
     const file = e.target.files?.[0];
@@ -46,11 +48,35 @@ export default function CategoryAdminBlock({ category, products }) {
 
   function startEdit(p) {
     setEditingId(p.id);
-    setEditForm({ price: p.price, discountPrice: p.discountPrice || "", qty: p.qty });
+    setEditForm({
+      name: p.name,
+      image: p.image || "",
+      description: p.description || "",
+      price: p.price,
+      discountPrice: p.discountPrice || "",
+      qty: p.qty,
+    });
+  }
+
+  async function handleEditFileChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditUploading(true);
+    try {
+      const url = await uploadImage(file);
+      setEditForm((f) => ({ ...f, image: url }));
+    } catch (err) {
+      alert(err.message || "Rasm yuklashda xatolik");
+    } finally {
+      setEditUploading(false);
+    }
   }
 
   async function saveEdit(productId) {
     await updateProduct(productId, {
+      name: editForm.name.trim(),
+      image: editForm.image,
+      description: editForm.description || "",
       price: Number(editForm.price),
       discountPrice: editForm.discountPrice ? Number(editForm.discountPrice) : null,
       qty: Number(editForm.qty),
@@ -155,70 +181,116 @@ export default function CategoryAdminBlock({ category, products }) {
         <div className="text-[13px] text-muted">Mahsulot yo&apos;q.</div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {products.map((p) => (
-            <div key={p.id} className="border border-border rounded-lg p-2">
-              <ProductImage src={p.image} alt={p.name} height={100} />
-              <div className="text-xs font-semibold mt-1.5">{p.name}</div>
-
-              {editingId === p.id ? (
-                <div className="flex flex-col gap-1 mt-1">
+          {products.map((p) =>
+            editingId === p.id ? (
+              <div
+                key={p.id}
+                className="col-span-2 sm:col-span-3 md:col-span-4 border border-primary rounded-lg p-3 bg-bg"
+              >
+                <div className="flex justify-between items-center mb-2.5">
+                  <div className="font-semibold text-sm">Tahrirlash: {p.name}</div>
+                  <button onClick={() => setEditingId(null)}>
+                    <X size={16} className="text-muted" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 items-start">
                   <input
+                    placeholder="Nomi"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    className="border border-border rounded-lg px-3 py-2 text-sm bg-white"
+                  />
+                  <div>
+                    <label className="flex items-center justify-center gap-1.5 border border-dashed border-border rounded-lg px-3 py-2 text-xs cursor-pointer bg-white">
+                      {editUploading ? (
+                        <>
+                          <Loader2 size={13} className="animate-spin" /> Yuklanmoqda...
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={13} /> Rasm almashtirish
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleEditFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                  <input
+                    placeholder="Narxi"
                     type="number"
                     value={editForm.price}
                     onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
-                    className="border border-border rounded px-2 py-1 text-xs"
-                    placeholder="Narxi"
+                    className="border border-border rounded-lg px-3 py-2 text-sm bg-white"
                   />
                   <input
-                    type="number"
-                    value={editForm.discountPrice}
-                    onChange={(e) => setEditForm({ ...editForm, discountPrice: e.target.value })}
-                    className="border border-border rounded px-2 py-1 text-xs"
-                    placeholder="Chegirmali narx"
-                  />
-                  <input
+                    placeholder="Soni"
                     type="number"
                     value={editForm.qty}
                     onChange={(e) => setEditForm({ ...editForm, qty: e.target.value })}
-                    className="border border-border rounded px-2 py-1 text-xs"
-                    placeholder="Soni"
+                    className="border border-border rounded-lg px-3 py-2 text-sm bg-white"
                   />
+                  <input
+                    placeholder="Chegirmali narx (ixtiyoriy)"
+                    type="number"
+                    value={editForm.discountPrice}
+                    onChange={(e) => setEditForm({ ...editForm, discountPrice: e.target.value })}
+                    className="col-span-2 border border-border rounded-lg px-3 py-2 text-sm bg-white"
+                  />
+                  <textarea
+                    placeholder="Tavsif"
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    rows={2}
+                    className="col-span-2 border border-border rounded-lg px-3 py-2 text-sm bg-white"
+                  />
+                  {editForm.image && (
+                    <div className="w-20">
+                      <ProductImage src={editForm.image} alt="" height={60} />
+                    </div>
+                  )}
                   <button
                     onClick={() => saveEdit(p.id)}
-                    className="flex items-center justify-center gap-1 bg-success text-white rounded px-2 py-1 text-xs font-semibold"
+                    disabled={editUploading}
+                    className="col-span-2 sm:col-span-4 flex items-center justify-center gap-1.5 bg-success text-white rounded-lg py-2 text-sm font-semibold disabled:opacity-60"
                   >
-                    <Check size={12} /> Saqlash
+                    <Check size={14} /> Saqlash
                   </button>
                 </div>
-              ) : (
-                <>
-                  {p.discountPrice ? (
-                    <div>
-                      <span className="text-[10px] text-muted line-through mr-1">
-                        {formatSum(p.price)}
-                      </span>
-                      <span className="text-xs text-danger font-bold">
-                        {formatSum(p.discountPrice)}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="text-xs text-primary font-bold">{formatSum(p.price)}</div>
-                  )}
-                  <div className="flex justify-between items-center mt-1">
-                    <span className="text-[11px] text-muted">{p.qty} ta qoldi</span>
-                    <div className="flex gap-2">
-                      <button onClick={() => startEdit(p)}>
-                        <Pencil size={13} className="text-primary" />
-                      </button>
-                      <button onClick={() => deleteProduct(p.id)}>
-                        <Trash2 size={13} className="text-danger" />
-                      </button>
-                    </div>
+              </div>
+            ) : (
+              <div key={p.id} className="border border-border rounded-lg p-2">
+                <ProductImage src={p.image} alt={p.name} height={100} />
+                <div className="text-xs font-semibold mt-1.5">{p.name}</div>
+                {p.discountPrice ? (
+                  <div>
+                    <span className="text-[10px] text-muted line-through mr-1">
+                      {formatSum(p.price)}
+                    </span>
+                    <span className="text-xs text-danger font-bold">
+                      {formatSum(p.discountPrice)}
+                    </span>
                   </div>
-                </>
-              )}
-            </div>
-          ))}
+                ) : (
+                  <div className="text-xs text-primary font-bold">{formatSum(p.price)}</div>
+                )}
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-[11px] text-muted">{p.qty} ta qoldi</span>
+                  <div className="flex gap-2">
+                    <button onClick={() => startEdit(p)}>
+                      <Pencil size={13} className="text-primary" />
+                    </button>
+                    <button onClick={() => deleteProduct(p.id)}>
+                      <Trash2 size={13} className="text-danger" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )
+          )}
         </div>
       )}
     </div>
