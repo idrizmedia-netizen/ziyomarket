@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bell, X, Megaphone } from "lucide-react";
+import { Bell, X, Megaphone, BellRing } from "lucide-react";
 import { subscribeAnnouncements } from "../lib/firestore";
+import {
+  requestNotificationPermission,
+  getNotificationPermission,
+} from "../lib/notifications";
 
 const READ_KEY = "ziyomarket_read_announcements";
 
@@ -22,7 +26,17 @@ export default function NotificationBell() {
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
   const [readIds, setReadIds] = useState([]);
+  const [pushPermission, setPushPermission] = useState("default");
   const wrapRef = useRef(null);
+
+  useEffect(() => {
+    setPushPermission(getNotificationPermission());
+  }, []);
+
+  async function handleEnablePush() {
+    const result = await requestNotificationPermission();
+    setPushPermission(result);
+  }
 
   useEffect(() => {
     try {
@@ -101,6 +115,18 @@ export default function NotificationBell() {
                 </div>
               ))}
             </div>
+          )}
+
+          {pushPermission !== "granted" && pushPermission !== "unsupported" && (
+            <button
+              onClick={handleEnablePush}
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-semibold text-primary border-t border-border bg-bg"
+            >
+              <BellRing size={15} />
+              {pushPermission === "denied"
+                ? "Bildirishnoma bloklangan (brauzer sozlamasidan yoqing)"
+                : "Buyurtma holati uchun bildirishnoma yoqish"}
+            </button>
           )}
         </div>
       )}
