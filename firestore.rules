@@ -25,14 +25,41 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Bildirishnomalar: hammaga ko'rinadi, faqat admin yoza oladi
+    match /announcements/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Reklama karuseli va sozlamalar: hammaga ko'rinadi, faqat admin yoza oladi
+    match /ads/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /products/{productId} {
       allow read: if true;
       allow create, delete: if isAdmin();
       // admins can edit anything; sellers can only fulfill orders (which
-      // decreases qty) so we allow them to update qty specifically
+      // decreases qty); any signed-in user can update rating fields when
+      // leaving a review
       allow update: if isAdmin() ||
         (isSeller() &&
-         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['qty']));
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['qty','soldCount'])) ||
+        (isSignedIn() &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratingSum','ratingCount']));
+    }
+
+    // Sharhlar: hammaga ko'rinadi, faqat o'z nomidan yoza oladi, o'zgartirib/
+    // o'chirib bo'lmaydi (halollikni saqlash uchun)
+    match /reviews/{id} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.buyerUid == request.auth.uid;
+      allow update, delete: if false;
     }
 
     // Orders: a signed-in user can create their own pending order (app orqali
@@ -49,7 +76,12 @@ service cloud.firestore {
          request.resource.data.source == 'pos');
       allow read: if isSignedIn() &&
         (resource.data.buyerUid == request.auth.uid || isSeller());
-      allow update: if isSeller();
+      allow update: if isSeller() ||
+        (isSignedIn() &&
+         resource.data.buyerUid == request.auth.uid &&
+         resource.data.status == 'pending' &&
+         request.resource.data.status == 'cancelled' &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','cancelledAt']));
       allow delete: if false;
     }
 
