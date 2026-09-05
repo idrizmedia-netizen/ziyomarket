@@ -5,7 +5,7 @@ import Header from "../../components/Header";
 import CartDrawer from "../../components/CartDrawer";
 import FavoritesDrawer from "../../components/FavoritesDrawer";
 import ReceiptModal from "../../components/ReceiptModal";
-import { Receipt } from "lucide-react";
+import { Receipt, ChevronDown } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { subscribeUserOrders, subscribeProducts } from "../../lib/firestore";
 import { formatSum } from "../../lib/utils";
@@ -19,6 +19,7 @@ export default function ProfilePage() {
   const [cartOpen, setCartOpen] = useState(false);
   const [favoritesOpen, setFavoritesOpen] = useState(false);
   const [viewReceipt, setViewReceipt] = useState(null);
+  const [historyLimit, setHistoryLimit] = useState(5);
 
   function openReceipt(o) {
     setViewReceipt({
@@ -27,7 +28,7 @@ export default function ProfilePage() {
       discount: o.discount || 0,
       bonus: o.bonus || 0,
       total: o.total,
-      sellerName: o.fulfilledBy || o.sellerName || "ZiyoMarket",
+      sellerName: o.fulfilledByName || o.sellerName || "ZiyoMarket",
       date: o.fulfilledAt?.toDate
         ? o.fulfilledAt.toDate().toLocaleString("uz-UZ")
         : o.createdAt?.toDate
@@ -87,7 +88,7 @@ export default function ProfilePage() {
               <div className="text-muted text-sm">Hali hech narsa buyurtma qilinmagan.</div>
             ) : (
               <div className="flex flex-col gap-3">
-                {orders.map((o) => {
+                {orders.slice(0, historyLimit).map((o) => {
                   const statusLabel =
                     o.status === "fulfilled"
                       ? "Sotib oldingiz"
@@ -136,6 +137,18 @@ export default function ProfilePage() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {orders.length > historyLimit && (
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={() => setHistoryLimit((l) => l + 5)}
+                  className="flex items-center gap-1.5 border border-primary text-primary rounded-full px-5 py-2 text-sm font-semibold"
+                >
+                  Eski buyurtmalarni ko&apos;rsatish
+                  <ChevronDown size={15} />
+                </button>
               </div>
             )}
           </>
