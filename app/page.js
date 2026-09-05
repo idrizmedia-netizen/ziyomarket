@@ -3,16 +3,22 @@
 import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import CartDrawer from "../components/CartDrawer";
+import FavoritesDrawer from "../components/FavoritesDrawer";
 import CategorySection from "../components/CategorySection";
 import CategoryPicker from "../components/CategoryPicker";
 import AdCarousel from "../components/AdCarousel";
+import { ArrowUpDown } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 import { subscribeCategories, subscribeProducts } from "../lib/firestore";
 
 export default function HomePage() {
+  const { t } = useLanguage();
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
+  const [sortMode, setSortMode] = useState("default");
   const [cartOpen, setCartOpen] = useState(false);
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,16 +33,28 @@ export default function HomePage() {
     };
   }, []);
 
-  const filtered = search.trim()
+  const searched = search.trim()
     ? products.filter((p) =>
         p.name.toLowerCase().includes(search.trim().toLowerCase())
       )
     : products;
 
+  const filtered = [...searched].sort((a, b) => {
+    const priceA = a.discountPrice || a.price;
+    const priceB = b.discountPrice || b.price;
+    const ratingA = a.ratingCount ? a.ratingSum / a.ratingCount : 0;
+    const ratingB = b.ratingCount ? b.ratingSum / b.ratingCount : 0;
+    if (sortMode === "price_asc") return priceA - priceB;
+    if (sortMode === "price_desc") return priceB - priceA;
+    if (sortMode === "rating_desc") return ratingB - ratingA;
+    return 0;
+  });
+
   return (
     <div className="min-h-screen">
       <Header
         onCartOpen={() => setCartOpen(true)}
+        onFavoritesOpen={() => setFavoritesOpen(true)}
         search={search}
         onSearchChange={setSearch}
       />
@@ -46,10 +64,10 @@ export default function HomePage() {
 
         <div className="bg-gradient-to-br from-primary to-primaryDark rounded-2xl p-9 text-white mb-8">
           <div className="font-display text-3xl mb-2 max-w-lg">
-            Kerakli narsangizni ZiyoMarket'dan toping
+            {t("hero_title")}
           </div>
           <div className="text-white/75 text-[15px] max-w-md">
-            Ishonchli sotuvchilar, qulay narxlar va tezkor yetkazib berish — barchasi bir joyda.
+            {t("hero_subtitle")}
           </div>
         </div>
 
@@ -68,12 +86,28 @@ export default function HomePage() {
 
         {!loading && categories.length === 0 && (
           <div className="text-muted text-center py-10">
-            Hozircha bo'limlar qo'shilmagan.
+            {t("no_categories")}
           </div>
         )}
 
         {!loading && !search.trim() && (
           <CategoryPicker categories={categories} products={products} />
+        )}
+
+        {!loading && products.length > 0 && (
+          <div className="flex items-center justify-end gap-2 mb-4">
+            <ArrowUpDown size={14} className="text-muted" />
+            <select
+              value={sortMode}
+              onChange={(e) => setSortMode(e.target.value)}
+              className="border border-border rounded-lg px-3 py-1.5 text-sm bg-white"
+            >
+              <option value="default">{t("sort_default")}</option>
+              <option value="price_asc">{t("sort_price_asc")}</option>
+              <option value="price_desc">{t("sort_price_desc")}</option>
+              <option value="rating_desc">{t("sort_rating")}</option>
+            </select>
+          </div>
         )}
 
         {!loading &&
@@ -87,12 +121,17 @@ export default function HomePage() {
 
         {!loading && search.trim() && filtered.length === 0 && (
           <div className="text-muted text-center py-10">
-            &quot;{search}&quot; bo&apos;yicha hech narsa topilmadi.
+            &quot;{search}&quot; {t("no_search_results")}
           </div>
         )}
       </div>
 
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} products={products} />
+      <FavoritesDrawer
+        open={favoritesOpen}
+        onClose={() => setFavoritesOpen(false)}
+        products={products}
+      />
     </div>
   );
 }
