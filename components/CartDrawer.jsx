@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X, Plus, Minus, Trash2 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import { formatSum } from "../lib/utils";
 import { placeOrder } from "../lib/firestore";
 import { signInWithGoogle } from "../lib/auth";
@@ -12,6 +13,7 @@ import ProductImage from "./ProductImage";
 export default function CartDrawer({ open, onClose, products }) {
   const { cart, changeQty, removeFromCart, clearCart } = useCart();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -69,14 +71,14 @@ export default function CartDrawer({ open, onClose, products }) {
         className="w-[340px] max-w-[90vw] bg-bg h-full p-5 overflow-y-auto flex flex-col"
       >
         <div className="flex justify-between items-center mb-4">
-          <div className="font-display text-xl">Savatcha</div>
+          <div className="font-display text-xl">{t("cart_title")}</div>
           <button onClick={onClose}>
             <X size={20} />
           </button>
         </div>
 
         {items.length === 0 ? (
-          <div className="text-muted text-sm mt-5">Savatcha bo'sh.</div>
+          <div className="text-muted text-sm mt-5">{t("cart_empty")}</div>
         ) : (
           <div className="flex flex-col gap-3 flex-1">
             {items.map((i) => (
@@ -120,7 +122,7 @@ export default function CartDrawer({ open, onClose, products }) {
 
         <div className="border-t border-border mt-4 pt-4">
           <div className="flex justify-between text-[15px] mb-3">
-            <span>Jami:</span>
+            <span>{t("cart_total")}:</span>
             <span className="font-bold">{formatSum(total)}</span>
           </div>
           <button
@@ -132,12 +134,11 @@ export default function CartDrawer({ open, onClose, products }) {
                 : "bg-accent text-primaryDark"
             }`}
           >
-            {submitting ? "Yuborilmoqda..." : "Buyurtma berish"}
+            {submitting ? t("sending") : t("place_order")}
           </button>
         </div>
         <div className="text-[11px] text-muted mt-2 text-center">
-          Yetkazib berish xizmati hozircha yo&apos;q — buyurtma tasdiqlangach,
-          do&apos;kondan o&apos;zingiz olib ketasiz.
+          {t("no_delivery_note")}
         </div>
       </div>
     </div>
