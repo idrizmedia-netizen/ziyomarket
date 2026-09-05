@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import CartDrawer from "../../components/CartDrawer";
 import FavoritesDrawer from "../../components/FavoritesDrawer";
+import ReceiptModal from "../../components/ReceiptModal";
+import { Receipt } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { subscribeUserOrders, subscribeProducts } from "../../lib/firestore";
 import { formatSum } from "../../lib/utils";
@@ -16,6 +18,23 @@ export default function ProfilePage() {
   const [search, setSearch] = useState("");
   const [cartOpen, setCartOpen] = useState(false);
   const [favoritesOpen, setFavoritesOpen] = useState(false);
+  const [viewReceipt, setViewReceipt] = useState(null);
+
+  function openReceipt(o) {
+    setViewReceipt({
+      items: o.items,
+      subtotal: o.subtotal ?? o.total,
+      discount: o.discount || 0,
+      bonus: o.bonus || 0,
+      total: o.total,
+      sellerName: o.fulfilledBy || o.sellerName || "ZiyoMarket",
+      date: o.fulfilledAt?.toDate
+        ? o.fulfilledAt.toDate().toLocaleString("uz-UZ")
+        : o.createdAt?.toDate
+        ? o.createdAt.toDate().toLocaleString("uz-UZ")
+        : "",
+    });
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -105,6 +124,15 @@ export default function ProfilePage() {
                         <span>Jami</span>
                         <span>{formatSum(o.total)}</span>
                       </div>
+                      {o.status === "fulfilled" && (
+                        <button
+                          onClick={() => openReceipt(o)}
+                          className="flex items-center gap-1.5 text-[12px] font-semibold text-primary mt-2.5"
+                        >
+                          <Receipt size={13} />
+                          Chekni ko&apos;rish
+                        </button>
+                      )}
                     </div>
                   );
                 })}
@@ -120,6 +148,9 @@ export default function ProfilePage() {
         onClose={() => setFavoritesOpen(false)}
         products={products}
       />
+      {viewReceipt && (
+        <ReceiptModal receipt={viewReceipt} onClose={() => setViewReceipt(null)} />
+      )}
     </div>
   );
 }
