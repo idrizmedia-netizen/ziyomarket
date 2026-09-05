@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import CartDrawer from "../../components/CartDrawer";
+import FavoritesDrawer from "../../components/FavoritesDrawer";
 import { useAuth } from "../../context/AuthContext";
 import { subscribeUserOrders, subscribeProducts } from "../../lib/firestore";
 import { formatSum } from "../../lib/utils";
@@ -14,6 +15,7 @@ export default function ProfilePage() {
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [cartOpen, setCartOpen] = useState(false);
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -28,7 +30,12 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen">
-      <Header onCartOpen={() => setCartOpen(true)} search={search} onSearchChange={setSearch} />
+      <Header
+        onCartOpen={() => setCartOpen(true)}
+        onFavoritesOpen={() => setFavoritesOpen(true)}
+        search={search}
+        onSearchChange={setSearch}
+      />
 
       <div className="px-5 py-6 max-w-[700px] mx-auto pb-16">
         {loading ? (
@@ -108,6 +115,11 @@ export default function ProfilePage() {
       </div>
 
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} products={products} />
+      <FavoritesDrawer
+        open={favoritesOpen}
+        onClose={() => setFavoritesOpen(false)}
+        products={products}
+      />
     </div>
   );
 }
