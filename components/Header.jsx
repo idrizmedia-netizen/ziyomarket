@@ -2,16 +2,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ShoppingCart, User, ShieldCheck, Search, Sparkles } from "lucide-react";
+import { ShoppingCart, User, ShieldCheck, Search, Sparkles, Heart } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
+import { useFavorites } from "../context/FavoritesContext";
+import { useLanguage } from "../context/LanguageContext";
 import { signInWithGoogle, signOutUser } from "../lib/auth";
 import InstallButton from "./InstallButton";
 import NotificationBell from "./NotificationBell";
 
-export default function Header({ onCartOpen, search, onSearchChange }) {
+export default function Header({ onCartOpen, onFavoritesOpen, search, onSearchChange }) {
   const { user, isAdmin, isSeller } = useAuth();
   const { cart } = useCart();
+  const { favorites } = useFavorites();
+  const { lang, setLang, t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
@@ -35,12 +39,21 @@ export default function Header({ onCartOpen, search, onSearchChange }) {
         <input
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Mahsulot qidirish..."
+          placeholder={t("search_placeholder")}
           className="bg-transparent outline-none text-sm placeholder-white/50 w-full"
         />
       </div>
 
       <div className="flex items-center gap-4">
+        <button onClick={onFavoritesOpen} className="relative">
+          <Heart size={21} />
+          {favorites.length > 0 && (
+            <span className="absolute -top-1.5 -right-2 bg-accent text-primaryDark text-[11px] font-bold rounded-full min-w-[17px] h-[17px] flex items-center justify-center px-1">
+              {favorites.length}
+            </span>
+          )}
+        </button>
+
         <button onClick={onCartOpen} className="relative">
           <ShoppingCart size={22} />
           {cartCount > 0 && (
@@ -48,6 +61,13 @@ export default function Header({ onCartOpen, search, onSearchChange }) {
               {cartCount}
             </span>
           )}
+        </button>
+
+        <button
+          onClick={() => setLang(lang === "uz" ? "ru" : "uz")}
+          className="bg-white/10 rounded-full px-2.5 py-1 text-xs font-bold"
+        >
+          {lang === "uz" ? "RU" : "UZ"}
         </button>
 
         <InstallButton />
@@ -70,7 +90,7 @@ export default function Header({ onCartOpen, search, onSearchChange }) {
                   className="block px-4 py-2.5 text-sm hover:bg-bg"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Profil
+                  {t("profile")}
                 </Link>
                 {isSeller && (
                   <Link
@@ -78,7 +98,7 @@ export default function Header({ onCartOpen, search, onSearchChange }) {
                     className="block px-4 py-2.5 text-sm hover:bg-bg"
                     onClick={() => setMenuOpen(false)}
                   >
-                    Boshqaruv paneli
+                    {t("admin_panel")}
                   </Link>
                 )}
                 <button
@@ -88,7 +108,7 @@ export default function Header({ onCartOpen, search, onSearchChange }) {
                   }}
                   className="block w-full text-left px-4 py-2.5 text-sm text-danger hover:bg-bg"
                 >
-                  Chiqish
+                  {t("logout")}
                 </button>
               </div>
             )}
@@ -98,7 +118,7 @@ export default function Header({ onCartOpen, search, onSearchChange }) {
             onClick={handleLogin}
             className="bg-accent text-primaryDark rounded-full px-4 py-2 text-sm font-semibold"
           >
-            Google bilan kirish
+            {t("login_google")}
           </button>
         )}
       </div>
