@@ -5,6 +5,7 @@ import { FavoritesProvider } from "../context/FavoritesContext";
 import { LanguageProvider } from "../context/LanguageContext";
 import ServiceWorkerRegister from "../components/ServiceWorkerRegister";
 import MobileNav from "../components/MobileNav";
+import OrderStatusWatcher from "../components/OrderStatusWatcher";
 
 // Firebase faqat brauzerda ishlaydi — shuning uchun sahifalar build vaqtida
 // oldindan statik qilib tayyorlanmasin, har doim so'rov kelganda ishlasin.
@@ -38,6 +39,7 @@ export default function RootLayout({ children }) {
               <FavoritesProvider>{children}</FavoritesProvider>
             </CartProvider>
             <MobileNav />
+            <OrderStatusWatcher />
           </LanguageProvider>
         </AuthProvider>
         <ServiceWorkerRegister />
