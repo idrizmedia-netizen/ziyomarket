@@ -1,6 +1,8 @@
 import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import { CartProvider } from "../context/CartContext";
+import { FavoritesProvider } from "../context/FavoritesContext";
+import { LanguageProvider } from "../context/LanguageContext";
 import ServiceWorkerRegister from "../components/ServiceWorkerRegister";
 import MobileNav from "../components/MobileNav";
 
@@ -31,8 +33,12 @@ export default function RootLayout({ children }) {
     <html lang="uz">
       <body>
         <AuthProvider>
-          <CartProvider>{children}</CartProvider>
-          <MobileNav />
+          <LanguageProvider>
+            <CartProvider>
+              <FavoritesProvider>{children}</FavoritesProvider>
+            </CartProvider>
+            <MobileNav />
+          </LanguageProvider>
         </AuthProvider>
         <ServiceWorkerRegister />
       </body>
