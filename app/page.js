@@ -7,7 +7,8 @@ import FavoritesDrawer from "../components/FavoritesDrawer";
 import CategorySection from "../components/CategorySection";
 import CategoryPicker from "../components/CategoryPicker";
 import AdCarousel from "../components/AdCarousel";
-import { ArrowUpDown } from "lucide-react";
+import ProductRow from "../components/ProductRow";
+import { ArrowUpDown, Flame, Sparkles } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { subscribeCategories, subscribeProducts } from "../lib/firestore";
 
@@ -50,6 +51,16 @@ export default function HomePage() {
     return 0;
   });
 
+  const bestSelling = [...products]
+    .filter((p) => p.soldCount > 0)
+    .sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0))
+    .slice(0, 10);
+
+  const newArrivals = [...products]
+    .filter((p) => p.createdAt?.toDate)
+    .sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate())
+    .slice(0, 10);
+
   return (
     <div className="min-h-screen">
       <Header
@@ -57,6 +68,7 @@ export default function HomePage() {
         onFavoritesOpen={() => setFavoritesOpen(true)}
         search={search}
         onSearchChange={setSearch}
+        suggestionsSource={products}
       />
 
       <div className="px-5 py-6 max-w-[1100px] mx-auto pb-16">
@@ -92,6 +104,22 @@ export default function HomePage() {
 
         {!loading && !search.trim() && (
           <CategoryPicker categories={categories} products={products} />
+        )}
+
+        {!loading && !search.trim() && (
+          <ProductRow
+            title="Yangi qo'shilganlar"
+            icon={<Sparkles size={18} className="text-accent" />}
+            products={newArrivals}
+          />
+        )}
+
+        {!loading && !search.trim() && (
+          <ProductRow
+            title="Eng ko'p sotilganlar"
+            icon={<Flame size={18} className="text-danger" />}
+            products={bestSelling}
+          />
         )}
 
         {!loading && products.length > 0 && (
