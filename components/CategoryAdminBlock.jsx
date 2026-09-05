@@ -11,7 +11,7 @@ export default function CategoryAdminBlock({ category, products }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
-    image: "",
+    images: [],
     description: "",
     price: "",
     discountPrice: "",
@@ -31,18 +31,23 @@ export default function CategoryAdminBlock({ category, products }) {
     setUploading(true);
     try {
       const url = await uploadImage(file);
-      setForm((f) => ({ ...f, image: url }));
+      setForm((f) => ({ ...f, images: [...f.images, url] }));
     } catch (err) {
       setUploadError(err.message || "Rasm yuklashda xatolik");
     } finally {
       setUploading(false);
+      e.target.value = "";
     }
+  }
+
+  function removeImage(idx) {
+    setForm((f) => ({ ...f, images: f.images.filter((_, i) => i !== idx) }));
   }
 
   async function submit() {
     if (!form.name.trim() || !form.price || !form.qty) return;
     await addProduct(category.id, category.name, form);
-    setForm({ name: "", image: "", description: "", price: "", discountPrice: "", qty: "" });
+    setForm({ name: "", images: [], description: "", price: "", discountPrice: "", qty: "" });
     setOpen(false);
   }
 
@@ -50,7 +55,7 @@ export default function CategoryAdminBlock({ category, products }) {
     setEditingId(p.id);
     setEditForm({
       name: p.name,
-      image: p.image || "",
+      images: p.images && p.images.length ? p.images : p.image ? [p.image] : [],
       description: p.description || "",
       price: p.price,
       discountPrice: p.discountPrice || "",
@@ -64,18 +69,24 @@ export default function CategoryAdminBlock({ category, products }) {
     setEditUploading(true);
     try {
       const url = await uploadImage(file);
-      setEditForm((f) => ({ ...f, image: url }));
+      setEditForm((f) => ({ ...f, images: [...f.images, url] }));
     } catch (err) {
       alert(err.message || "Rasm yuklashda xatolik");
     } finally {
       setEditUploading(false);
+      e.target.value = "";
     }
+  }
+
+  function removeEditImage(idx) {
+    setEditForm((f) => ({ ...f, images: f.images.filter((_, i) => i !== idx) }));
   }
 
   async function saveEdit(productId) {
     await updateProduct(productId, {
       name: editForm.name.trim(),
-      image: editForm.image,
+      image: editForm.images[0] || "",
+      images: editForm.images,
       description: editForm.description || "",
       price: Number(editForm.price),
       discountPrice: editForm.discountPrice ? Number(editForm.discountPrice) : null,
@@ -116,13 +127,9 @@ export default function CategoryAdminBlock({ category, products }) {
                 <>
                   <Loader2 size={13} className="animate-spin" /> Yuklanmoqda...
                 </>
-              ) : form.image ? (
-                <>
-                  <Check size={13} className="text-success" /> Rasm tanlandi
-                </>
               ) : (
                 <>
-                  <Upload size={13} /> Rasm tanlash
+                  <Upload size={13} /> Rasm qo&apos;shish {form.images.length > 0 && `(${form.images.length})`}
                 </>
               )}
               <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
@@ -161,9 +168,24 @@ export default function CategoryAdminBlock({ category, products }) {
             className="col-span-2 sm:col-span-2 border border-border rounded-lg px-3 py-2 text-sm"
           />
 
-          {form.image && (
-            <div className="col-span-2 sm:col-span-4 w-24">
-              <ProductImage src={form.image} alt="Ko'rinish" height={70} />
+          {form.images.length > 0 && (
+            <div className="col-span-2 sm:col-span-4 flex gap-2 flex-wrap">
+              {form.images.map((img, idx) => (
+                <div key={idx} className="relative w-16">
+                  <ProductImage src={img} alt="" height={50} />
+                  <button
+                    onClick={() => removeImage(idx)}
+                    className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-danger rounded-full flex items-center justify-center"
+                  >
+                    <X size={10} className="text-white" />
+                  </button>
+                  {idx === 0 && (
+                    <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] text-center">
+                      asosiy
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
           )}
 
@@ -208,7 +230,7 @@ export default function CategoryAdminBlock({ category, products }) {
                         </>
                       ) : (
                         <>
-                          <Upload size={13} /> Rasm almashtirish
+                          <Upload size={13} /> Rasm qo&apos;shish
                         </>
                       )}
                       <input
@@ -247,9 +269,24 @@ export default function CategoryAdminBlock({ category, products }) {
                     rows={2}
                     className="col-span-2 border border-border rounded-lg px-3 py-2 text-sm bg-white"
                   />
-                  {editForm.image && (
-                    <div className="w-20">
-                      <ProductImage src={editForm.image} alt="" height={60} />
+                  {editForm.images?.length > 0 && (
+                    <div className="col-span-2 sm:col-span-4 flex gap-2 flex-wrap">
+                      {editForm.images.map((img, idx) => (
+                        <div key={idx} className="relative w-16">
+                          <ProductImage src={img} alt="" height={50} />
+                          <button
+                            onClick={() => removeEditImage(idx)}
+                            className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-danger rounded-full flex items-center justify-center"
+                          >
+                            <X size={10} className="text-white" />
+                          </button>
+                          {idx === 0 && (
+                            <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] text-center">
+                              asosiy
+                            </span>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                   <button
