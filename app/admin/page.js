@@ -16,6 +16,7 @@ import CartDrawer from "../../components/CartDrawer";
 import FavoritesDrawer from "../../components/FavoritesDrawer";
 import StatCard from "../../components/StatCard";
 import CategoryAdminBlock from "../../components/CategoryAdminBlock";
+import BulkImportBlock from "../../components/BulkImportBlock";
 import AdminManageBlock from "../../components/AdminManageBlock";
 import SellerManageBlock from "../../components/SellerManageBlock";
 import PendingOrdersBlock from "../../components/PendingOrdersBlock";
@@ -235,6 +236,8 @@ export default function AdminPage() {
                     </button>
                   </div>
                 </div>
+
+                <BulkImportBlock categories={categories} />
 
                 {categories.map((cat) => (
                   <CategoryAdminBlock
