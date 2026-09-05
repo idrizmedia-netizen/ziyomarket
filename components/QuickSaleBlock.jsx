@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search, Plus, Minus, X, ShoppingBag, Check } from "lucide-react";
 import ProductImage from "./ProductImage";
+import ReceiptModal from "./ReceiptModal";
 import { formatSum } from "../lib/utils";
 import { createDirectSale } from "../lib/firestore";
 import { useAuth } from "../context/AuthContext";
@@ -16,7 +17,7 @@ export default function QuickSaleBlock({ products }) {
   const [bonus, setBonus] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [receipt, setReceipt] = useState(null);
 
   const filtered = search.trim()
     ? products.filter((p) => p.name.toLowerCase().includes(search.trim().toLowerCase()))
@@ -66,25 +67,33 @@ export default function QuickSaleBlock({ products }) {
     if (detailed.length === 0) return;
     setSubmitting(true);
     try {
+      const saleItems = detailed.map((i) => ({
+        productId: i.product.id,
+        name: i.product.name,
+        categoryName: i.product.categoryName,
+        price: i.product.discountPrice || i.product.price,
+        qty: i.qty,
+      }));
       await createDirectSale({
         sellerEmail: user?.email,
         sellerName: user?.displayName || user?.email,
-        items: detailed.map((i) => ({
-          productId: i.product.id,
-          name: i.product.name,
-          categoryName: i.product.categoryName,
-          price: i.product.discountPrice || i.product.price,
-          qty: i.qty,
-        })),
+        items: saleItems,
         discount: Number(discount || 0),
         bonus: Number(bonus || 0),
+      });
+      setReceipt({
+        items: saleItems,
+        subtotal,
+        discount: Number(discount || 0),
+        bonus: Number(bonus || 0),
+        total: finalTotal,
+        sellerName: user?.displayName || user?.email,
+        date: new Date().toLocaleString("uz-UZ"),
       });
       setPosCart([]);
       setDiscount("");
       setBonus("");
       setCheckoutOpen(false);
-      setSuccess(`Sotildi! Jami: ${formatSum(finalTotal)}`);
-      setTimeout(() => setSuccess(""), 3500);
     } catch (e) {
       setError(e.message || "Xatolik yuz berdi");
     } finally {
@@ -103,11 +112,7 @@ export default function QuickSaleBlock({ products }) {
         yoki bonus qo&apos;shib, darhol sotuvni yakunlang.
       </div>
 
-      {success && (
-        <div className="bg-success/10 text-success text-sm font-semibold rounded-lg px-3 py-2 mb-3">
-          {success}
-        </div>
-      )}
+      {receipt && <ReceiptModal receipt={receipt} onClose={() => setReceipt(null)} />}
 
       <div className="flex items-center gap-2 bg-bg rounded-full px-3.5 py-2 mb-3">
         <Search size={15} className="text-muted" />
