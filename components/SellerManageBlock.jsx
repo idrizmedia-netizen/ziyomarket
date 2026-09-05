@@ -6,6 +6,7 @@ import { subscribeSellers, addSeller, removeSeller } from "../lib/firestore";
 
 export default function SellerManageBlock({ currentEmail }) {
   const [sellers, setSellers] = useState([]);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
 
@@ -22,7 +23,8 @@ export default function SellerManageBlock({ currentEmail }) {
       return;
     }
     try {
-      await addSeller(clean, currentEmail);
+      await addSeller(clean, name.trim(), currentEmail);
+      setName("");
       setEmail("");
     } catch (e) {
       setError(e.message || "Xatolik yuz berdi");
@@ -40,21 +42,27 @@ export default function SellerManageBlock({ currentEmail }) {
         Bo&apos;lim/mahsulot va admin boshqaruviga kirisholmaydi.
       </div>
 
-      <div className="flex gap-2.5 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
+        <input
+          placeholder="Ism familiya"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="border border-border rounded-lg px-3 py-2.5 text-sm"
+        />
         <input
           placeholder="sotuvchi@gmail.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-1 border border-border rounded-lg px-3 py-2.5 text-sm"
+          className="border border-border rounded-lg px-3 py-2.5 text-sm"
         />
-        <button
-          onClick={handleAdd}
-          className="bg-primary text-white rounded-lg px-4 py-2.5 text-sm font-semibold flex items-center gap-1.5"
-        >
-          <UserPlus size={15} />
-          Qo&apos;shish
-        </button>
       </div>
+      <button
+        onClick={handleAdd}
+        className="bg-primary text-white rounded-lg px-4 py-2.5 text-sm font-semibold flex items-center justify-center gap-1.5 w-full sm:w-auto mb-3"
+      >
+        <UserPlus size={15} />
+        Qo&apos;shish
+      </button>
       {error && <div className="text-danger text-xs mb-2">{error}</div>}
 
       <div className="flex flex-col gap-1.5">
@@ -66,7 +74,10 @@ export default function SellerManageBlock({ currentEmail }) {
             key={s.email}
             className="flex items-center justify-between bg-bg rounded-lg px-3 py-2 text-sm"
           >
-            <span>{s.email}</span>
+            <span>
+              {s.name ? <span className="font-medium">{s.name}</span> : null}
+              <span className={s.name ? "text-muted text-xs ml-1.5" : ""}>{s.email}</span>
+            </span>
             <button onClick={() => removeSeller(s.email)}>
               <Trash2 size={14} className="text-danger" />
             </button>
