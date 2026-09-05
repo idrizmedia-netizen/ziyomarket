@@ -22,7 +22,7 @@ export default function PendingOrdersBlock() {
     setError("");
     setBusyId(orderId);
     try {
-      await fulfillOrder(orderId, user?.email);
+      await fulfillOrder(orderId, user?.email, user?.displayName || user?.email);
       setResultMap((prev) => ({ ...prev, [orderId]: "fulfilled" }));
     } catch (e) {
       setError(e.message || "Xatolik yuz berdi");
