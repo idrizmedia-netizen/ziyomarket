@@ -31,6 +31,8 @@ export default function ProductDetailModal({ product, onClose }) {
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const gallery = product.images && product.images.length ? product.images : [product.image];
+  const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     const unsub = subscribeReviews(product.id, setReviews);
@@ -91,7 +93,23 @@ export default function ProductDetailModal({ product, onClose }) {
         </div>
 
         <div className="p-5">
-          <ProductImage src={product.image} alt={product.name} height={220} />
+          <ProductImage src={gallery[activeImage]} alt={product.name} height={220} />
+
+          {gallery.length > 1 && (
+            <div className="flex gap-2 mt-2 overflow-x-auto">
+              {gallery.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveImage(idx)}
+                  className={`w-14 h-14 shrink-0 rounded-lg overflow-hidden border-2 ${
+                    idx === activeImage ? "border-primary" : "border-transparent"
+                  }`}
+                >
+                  <ProductImage src={img} alt="" height={56} />
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="flex items-center gap-2 mt-3">
             {product.discountPrice ? (
