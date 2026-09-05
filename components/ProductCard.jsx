@@ -1,15 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Star, ShoppingCart, BadgeCheck } from "lucide-react";
+import { Star, ShoppingCart, BadgeCheck, Heart } from "lucide-react";
 import ProductImage from "./ProductImage";
 import ProductDetailModal from "./ProductDetailModal";
 import { formatSum } from "../lib/utils";
 import { useCart } from "../context/CartContext";
+import { useFavorites } from "../context/FavoritesContext";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function ProductCard({ product }) {
   const { cart, addToCart } = useCart();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { t } = useLanguage();
   const [showDetail, setShowDetail] = useState(false);
+  const favorite = isFavorite(product.id);
   const inCart = cart.find((i) => i.productId === product.id);
   const remaining = product.qty - (inCart ? inCart.qty : 0);
   const lowStock = remaining > 0 && remaining <= 3;
@@ -27,7 +32,7 @@ export default function ProductCard({ product }) {
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
           {lowStock && (
             <span className="absolute top-2 left-2 bg-danger text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">
-              Kam qoldi
+              {t("low_stock")}
             </span>
           )}
           {discountPct > 0 && (
@@ -35,6 +40,18 @@ export default function ProductCard({ product }) {
               -{discountPct}%
             </span>
           )}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite(product.id);
+            }}
+            className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow"
+          >
+            <Heart
+              size={14}
+              className={favorite ? "text-danger fill-danger" : "text-muted"}
+            />
+          </button>
         </div>
 
         <div className="flex flex-col gap-1.5 p-3 flex-1">
@@ -68,10 +85,12 @@ export default function ProductCard({ product }) {
               </div>
             ) : (
               <span className="text-[11px] text-muted flex items-center gap-1">
-                <BadgeCheck size={12} className="text-success" /> Yangi
+                <BadgeCheck size={12} className="text-success" /> {t("new_badge")}
               </span>
             )}
-            <span className="text-[11px] text-muted whitespace-nowrap">{Math.max(remaining, 0)} ta</span>
+            <span className="text-[11px] text-muted whitespace-nowrap">
+              {Math.max(remaining, 0)} {t("unit")}
+            </span>
           </div>
 
           <button
@@ -84,7 +103,7 @@ export default function ProductCard({ product }) {
             }`}
           >
             <ShoppingCart size={14} />
-            {remaining <= 0 ? "Tugagan" : "Savatchaga"}
+            {remaining <= 0 ? t("out_of_stock") : t("add_to_cart")}
           </button>
         </div>
       </div>
