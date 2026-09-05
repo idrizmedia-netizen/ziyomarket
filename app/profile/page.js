@@ -5,9 +5,9 @@ import Header from "../../components/Header";
 import CartDrawer from "../../components/CartDrawer";
 import FavoritesDrawer from "../../components/FavoritesDrawer";
 import ReceiptModal from "../../components/ReceiptModal";
-import { Receipt, ChevronDown } from "lucide-react";
+import { Receipt, ChevronDown, X } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { subscribeUserOrders, subscribeProducts } from "../../lib/firestore";
+import { subscribeUserOrders, subscribeProducts, cancelOrder } from "../../lib/firestore";
 import { formatSum } from "../../lib/utils";
 import { signInWithGoogle } from "../../lib/auth";
 
@@ -35,6 +35,15 @@ export default function ProfilePage() {
         ? o.createdAt.toDate().toLocaleString("uz-UZ")
         : "",
     });
+  }
+
+  async function handleCancelOwn(orderId) {
+    if (!confirm("Buyurtmani bekor qilmoqchimisiz?")) return;
+    try {
+      await cancelOrder(orderId);
+    } catch (e) {
+      alert(e.message || "Xatolik yuz berdi");
+    }
   }
 
   useEffect(() => {
@@ -132,6 +141,15 @@ export default function ProfilePage() {
                         >
                           <Receipt size={13} />
                           Chekni ko&apos;rish
+                        </button>
+                      )}
+                      {o.status === "pending" && (
+                        <button
+                          onClick={() => handleCancelOwn(o.id)}
+                          className="flex items-center gap-1.5 text-[12px] font-semibold text-danger mt-2.5"
+                        >
+                          <X size={13} />
+                          Buyurtmani bekor qilish
                         </button>
                       )}
                     </div>
