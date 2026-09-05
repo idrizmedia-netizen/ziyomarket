@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Star } from "lucide-react";
+import { X, Star, Share2 } from "lucide-react";
 import ProductImage from "./ProductImage";
 import { formatSum } from "../lib/utils";
 import { useAuth } from "../context/AuthContext";
@@ -76,6 +76,29 @@ export default function ProductDetailModal({ product, onClose }) {
     }
   }
 
+  async function handleShare() {
+    const url = `${window.location.origin}/?product=${product.id}`;
+    const shareData = {
+      title: product.name,
+      text: `${product.name} — ${formatSum(product.discountPrice || product.price)} | ZiyoMarket`,
+      url,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (e) {
+        /* user cancelled */
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        alert("Havola nusxalandi");
+      } catch (e) {
+        /* ignore */
+      }
+    }
+  }
+
   return (
     <div
       className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
@@ -87,9 +110,14 @@ export default function ProductDetailModal({ product, onClose }) {
       >
         <div className="flex justify-between items-center px-5 py-4 border-b border-border sticky top-0 bg-white z-10">
           <div className="font-display text-lg">{product.name}</div>
-          <button onClick={onClose}>
-            <X size={20} />
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={handleShare} title="Ulashish">
+              <Share2 size={18} className="text-primary" />
+            </button>
+            <button onClick={onClose}>
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         <div className="p-5">
