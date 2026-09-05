@@ -11,13 +11,27 @@ import { signInWithGoogle, signOutUser } from "../lib/auth";
 import InstallButton from "./InstallButton";
 import NotificationBell from "./NotificationBell";
 
-export default function Header({ onCartOpen, onFavoritesOpen, search, onSearchChange }) {
+export default function Header({
+  onCartOpen,
+  onFavoritesOpen,
+  search,
+  onSearchChange,
+  suggestionsSource,
+}) {
   const { user, isAdmin, isSeller } = useAuth();
   const { cart } = useCart();
   const { favorites } = useFavorites();
   const { lang, setLang, t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [suggestOpen, setSuggestOpen] = useState(false);
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+
+  const suggestions =
+    suggestionsSource && search.trim()
+      ? suggestionsSource
+          .filter((p) => p.name.toLowerCase().includes(search.trim().toLowerCase()))
+          .slice(0, 5)
+      : [];
 
   async function handleLogin() {
     try {
@@ -34,14 +48,34 @@ export default function Header({ onCartOpen, onFavoritesOpen, search, onSearchCh
         ZiyoMarket
       </Link>
 
-      <div className="flex-1 min-w-[220px] max-w-md flex items-center gap-2 bg-white/10 rounded-full px-4 py-2">
+      <div className="flex-1 min-w-[220px] max-w-md flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 relative">
         <Search size={16} className="text-white/60" />
         <input
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
+          onFocus={() => setSuggestOpen(true)}
+          onBlur={() => setTimeout(() => setSuggestOpen(false), 150)}
           placeholder={t("search_placeholder")}
           className="bg-transparent outline-none text-sm placeholder-white/50 w-full"
         />
+
+        {suggestOpen && suggestions.length > 0 && (
+          <div className="absolute left-0 right-0 top-11 bg-white text-ink rounded-xl shadow-xl overflow-hidden z-40">
+            {suggestions.map((p) => (
+              <button
+                key={p.id}
+                onMouseDown={() => {
+                  onSearchChange(p.name);
+                  setSuggestOpen(false);
+                }}
+                className="flex items-center gap-2.5 w-full text-left px-4 py-2.5 text-sm hover:bg-bg"
+              >
+                <Search size={13} className="text-muted shrink-0" />
+                <span className="truncate">{p.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-4">
