@@ -9,9 +9,11 @@ import {
   BarChart3,
   Boxes,
   Settings,
+  Download,
 } from "lucide-react";
 import Header from "../../components/Header";
 import CartDrawer from "../../components/CartDrawer";
+import FavoritesDrawer from "../../components/FavoritesDrawer";
 import StatCard from "../../components/StatCard";
 import CategoryAdminBlock from "../../components/CategoryAdminBlock";
 import AdminManageBlock from "../../components/AdminManageBlock";
@@ -19,6 +21,7 @@ import SellerManageBlock from "../../components/SellerManageBlock";
 import PendingOrdersBlock from "../../components/PendingOrdersBlock";
 import QuickSaleBlock from "../../components/QuickSaleBlock";
 import SellerStatsBlock from "../../components/SellerStatsBlock";
+import SellerRevenueChart from "../../components/SellerRevenueChart";
 import AnnouncementsBlock from "../../components/AnnouncementsBlock";
 import AdsManageBlock from "../../components/AdsManageBlock";
 import { useAuth } from "../../context/AuthContext";
@@ -39,6 +42,7 @@ export default function AdminPage() {
   const [newCatName, setNewCatName] = useState("");
   const [search, setSearch] = useState("");
   const [cartOpen, setCartOpen] = useState(false);
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
   const [tab, setTab] = useState("orders");
 
   useEffect(() => {
@@ -63,6 +67,33 @@ export default function AdminPage() {
   const totalQty = sales.reduce((s, r) => s + r.qty, 0);
   const totalRevenue = sales.reduce((s, r) => s + r.qty * r.price, 0);
 
+  const salesByProduct = Object.values(
+    sales.reduce((acc, r) => {
+      const key = r.name + "|" + r.categoryName;
+      if (!acc[key]) {
+        acc[key] = { name: r.name, categoryName: r.categoryName, qty: 0, revenue: 0 };
+      }
+      acc[key].qty += r.qty;
+      acc[key].revenue += r.qty * r.price;
+      return acc;
+    }, {})
+  ).sort((a, b) => b.revenue - a.revenue);
+
+  function exportSalesCSV() {
+    const header = "Mahsulot,Bo'lim,Jami soni,Jami summa\n";
+    const rows = salesByProduct
+      .map((r) => `"${r.name}","${r.categoryName}",${r.qty},${r.revenue}`)
+      .join("\n");
+    const csv = "\uFEFF" + header + rows;
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ziyomarket-sotuvlar-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const tabs = [
     { id: "orders", label: "Buyurtmalar", icon: ClipboardList },
     { id: "stats", label: "Statistika", icon: BarChart3 },
@@ -72,7 +103,12 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen">
-      <Header onCartOpen={() => setCartOpen(true)} search={search} onSearchChange={setSearch} />
+      <Header
+        onCartOpen={() => setCartOpen(true)}
+        onFavoritesOpen={() => setFavoritesOpen(true)}
+        search={search}
+        onSearchChange={setSearch}
+      />
 
       <div className="px-5 py-6 max-w-[1000px] mx-auto pb-16">
         {loading ? (
@@ -137,28 +173,39 @@ export default function AdminPage() {
                   currentEmail={user.email}
                 />
 
-                <div className="font-display text-lg mt-8 mb-3">Sotuvlar tarixi</div>
-                {sales.length === 0 ? (
+                <SellerRevenueChart fulfilledOrders={fulfilledOrders} />
+
+                <div className="flex items-center justify-between mt-8 mb-3">
+                  <div className="font-display text-lg">Sotuvlar tarixi</div>
+                  {salesByProduct.length > 0 && (
+                    <button
+                      onClick={exportSalesCSV}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-primary border border-primary rounded-lg px-3 py-1.5"
+                    >
+                      <Download size={13} />
+                      Excel&apos;ga yuklab olish
+                    </button>
+                  )}
+                </div>
+                {salesByProduct.length === 0 ? (
                   <div className="text-muted text-sm">Hali yakunlangan sotuv bo&apos;lmagan.</div>
                 ) : (
                   <div className="bg-white rounded-xl border border-border overflow-hidden">
-                    <div className="grid grid-cols-[1.4fr_1fr_0.6fr_0.8fr_1fr] px-3.5 py-2.5 text-xs font-bold text-muted border-b border-border">
+                    <div className="grid grid-cols-[1.6fr_1fr_0.8fr_1fr] px-3.5 py-2.5 text-xs font-bold text-muted border-b border-border">
                       <span>Mahsulot</span>
                       <span>Bo&apos;lim</span>
-                      <span>Soni</span>
-                      <span>Summasi</span>
-                      <span>Xaridor</span>
+                      <span>Jami soni</span>
+                      <span>Jami summa</span>
                     </div>
-                    {[...sales].reverse().map((r, idx) => (
+                    {salesByProduct.map((r, idx) => (
                       <div
                         key={idx}
-                        className="grid grid-cols-[1.4fr_1fr_0.6fr_0.8fr_1fr] px-3.5 py-2.5 text-[13px] border-b border-border"
+                        className="grid grid-cols-[1.6fr_1fr_0.8fr_1fr] px-3.5 py-2.5 text-[13px] border-b border-border last:border-0"
                       >
-                        <span>{r.name}</span>
+                        <span className="font-medium">{r.name}</span>
                         <span className="text-muted">{r.categoryName}</span>
-                        <span>{r.qty}</span>
-                        <span>{formatSum(r.qty * r.price)}</span>
-                        <span className="text-muted">{r.buyer}</span>
+                        <span>{r.qty} ta</span>
+                        <span className="font-semibold text-primary">{formatSum(r.revenue)}</span>
                       </div>
                     ))}
                   </div>
@@ -212,6 +259,11 @@ export default function AdminPage() {
       </div>
 
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} products={products} />
+      <FavoritesDrawer
+        open={favoritesOpen}
+        onClose={() => setFavoritesOpen(false)}
+        products={products}
+      />
     </div>
   );
 }
