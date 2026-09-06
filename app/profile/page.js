@@ -5,7 +5,8 @@ import Header from "../../components/Header";
 import CartDrawer from "../../components/CartDrawer";
 import FavoritesDrawer from "../../components/FavoritesDrawer";
 import ReceiptModal from "../../components/ReceiptModal";
-import { Receipt, ChevronDown, X } from "lucide-react";
+import OrderEditModal from "../../components/OrderEditModal";
+import { Receipt, ChevronDown, X, Pencil } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { subscribeUserOrders, subscribeProducts, cancelOrder } from "../../lib/firestore";
 import { formatSum } from "../../lib/utils";
@@ -20,6 +21,7 @@ export default function ProfilePage() {
   const [favoritesOpen, setFavoritesOpen] = useState(false);
   const [viewReceipt, setViewReceipt] = useState(null);
   const [historyLimit, setHistoryLimit] = useState(5);
+  const [editOrder, setEditOrder] = useState(null);
 
   function openReceipt(o) {
     setViewReceipt({
@@ -144,13 +146,22 @@ export default function ProfilePage() {
                         </button>
                       )}
                       {o.status === "pending" && (
-                        <button
-                          onClick={() => handleCancelOwn(o.id)}
-                          className="flex items-center gap-1.5 text-[12px] font-semibold text-danger mt-2.5"
-                        >
-                          <X size={13} />
-                          Buyurtmani bekor qilish
-                        </button>
+                        <div className="flex items-center gap-4 mt-2.5">
+                          <button
+                            onClick={() => setEditOrder(o)}
+                            className="flex items-center gap-1.5 text-[12px] font-semibold text-primary"
+                          >
+                            <Pencil size={13} />
+                            Tahrirlash
+                          </button>
+                          <button
+                            onClick={() => handleCancelOwn(o.id)}
+                            className="flex items-center gap-1.5 text-[12px] font-semibold text-danger"
+                          >
+                            <X size={13} />
+                            Bekor qilish
+                          </button>
+                        </div>
                       )}
                     </div>
                   );
@@ -181,6 +192,13 @@ export default function ProfilePage() {
       />
       {viewReceipt && (
         <ReceiptModal receipt={viewReceipt} onClose={() => setViewReceipt(null)} />
+      )}
+      {editOrder && (
+        <OrderEditModal
+          order={editOrder}
+          products={products}
+          onClose={() => setEditOrder(null)}
+        />
       )}
     </div>
   );
