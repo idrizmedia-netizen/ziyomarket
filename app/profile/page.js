@@ -6,6 +6,7 @@ import CartDrawer from "../../components/CartDrawer";
 import FavoritesDrawer from "../../components/FavoritesDrawer";
 import ReceiptModal from "../../components/ReceiptModal";
 import OrderEditModal from "../../components/OrderEditModal";
+import SellerApplicationBlock from "../../components/SellerApplicationBlock";
 import { Receipt, ChevronDown, X, Pencil } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { subscribeUserOrders, subscribeProducts, cancelOrder } from "../../lib/firestore";
@@ -93,6 +94,8 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            <SellerApplicationBlock />
+
             <div className="font-display text-lg mb-3">Xaridlar tarixi</div>
 
             {orders.length === 0 ? (
@@ -124,6 +127,14 @@ export default function ProfilePage() {
                           {statusLabel}
                         </span>
                       </div>
+                      {o.pickupTime && o.status === "pending" && (
+                        <div className="text-[12px] font-semibold text-accentDark mb-1.5">
+                          Olib ketish: {new Date(o.pickupTime).toLocaleString("uz-UZ")}
+                        </div>
+                      )}
+                      {o.note && (
+                        <div className="text-[12px] text-muted mb-1.5">💬 {o.note}</div>
+                      )}
                       {o.items.map((it, idx) => (
                         <div key={idx} className="text-[13px] flex justify-between py-0.5">
                           <span>
