@@ -12,7 +12,7 @@ export function LanguageProvider({ children }) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved === "uz" || saved === "ru") setLang(saved);
+      if (saved === "uz" || saved === "ru" || saved === "en") setLang(saved);
     } catch (e) {
       /* ignore */
     }
