@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Star, ShoppingCart, BadgeCheck, Heart } from "lucide-react";
+import { Star, ShoppingCart, BadgeCheck, Heart, Share2 } from "lucide-react";
 import ProductImage from "./ProductImage";
 import ProductDetailModal from "./ProductDetailModal";
 import { formatSum } from "../lib/utils";
@@ -15,6 +15,30 @@ export default function ProductCard({ product }) {
   const { t } = useLanguage();
   const [showDetail, setShowDetail] = useState(false);
   const favorite = isFavorite(product.id);
+
+  async function handleShare(e) {
+    e.stopPropagation();
+    const url = `${window.location.origin}/?product=${product.id}`;
+    const shareData = {
+      title: product.name,
+      text: `${product.name} — ${formatSum(product.discountPrice || product.price)} | ZiyoMarket`,
+      url,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        /* user cancelled */
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        alert("Havola nusxalandi");
+      } catch (err) {
+        /* ignore */
+      }
+    }
+  }
   const inCart = cart.find((i) => i.productId === product.id);
   const remaining = product.qty - (inCart ? inCart.qty : 0);
   const lowStock = remaining > 0 && remaining <= 3;
@@ -51,6 +75,12 @@ export default function ProductCard({ product }) {
               size={14}
               className={favorite ? "text-danger fill-danger" : "text-muted"}
             />
+          </button>
+          <button
+            onClick={handleShare}
+            className="absolute bottom-2 right-11 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow"
+          >
+            <Share2 size={13} className="text-muted" />
           </button>
         </div>
 
