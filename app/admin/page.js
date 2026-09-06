@@ -244,6 +244,7 @@ export default function AdminPage() {
                     key={cat.id}
                     category={cat}
                     products={products.filter((p) => p.categoryId === cat.id)}
+                    allCategories={categories}
                   />
                 ))}
               </>
