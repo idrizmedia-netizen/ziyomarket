@@ -98,10 +98,10 @@ export default function Header({
         </button>
 
         <button
-          onClick={() => setLang(lang === "uz" ? "ru" : "uz")}
+          onClick={() => setLang(lang === "uz" ? "ru" : lang === "ru" ? "en" : "uz")}
           className="bg-white/10 rounded-full px-2.5 py-1 text-xs font-bold"
         >
-          {lang === "uz" ? "RU" : "UZ"}
+          {lang.toUpperCase()}
         </button>
 
         <InstallButton />
