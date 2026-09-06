@@ -4,10 +4,16 @@ import { useState } from "react";
 import { Trash2, Pencil, Check, Upload, Loader2, X } from "lucide-react";
 import ProductImage from "./ProductImage";
 import { formatSum } from "../lib/utils";
-import { addProduct, updateProduct, deleteProduct, deleteCategory } from "../lib/firestore";
+import {
+  addProduct,
+  updateProduct,
+  deleteProduct,
+  deleteCategory,
+  updateCategory,
+} from "../lib/firestore";
 import { uploadImage } from "../lib/imgbb";
 
-export default function CategoryAdminBlock({ category, products }) {
+export default function CategoryAdminBlock({ category, products, allCategories }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -23,6 +29,16 @@ export default function CategoryAdminBlock({ category, products }) {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [editUploading, setEditUploading] = useState(false);
+
+  const [renaming, setRenaming] = useState(false);
+  const [newCatName, setNewCatName] = useState(category.name);
+
+  async function saveCategoryName() {
+    if (newCatName.trim() && newCatName.trim() !== category.name) {
+      await updateCategory(category.id, newCatName.trim());
+    }
+    setRenaming(false);
+  }
 
   async function handleFileChange(e) {
     const file = e.target.files?.[0];
@@ -60,6 +76,7 @@ export default function CategoryAdminBlock({ category, products }) {
       price: p.price,
       discountPrice: p.discountPrice || "",
       qty: p.qty,
+      categoryId: p.categoryId,
     });
   }
 
@@ -83,6 +100,7 @@ export default function CategoryAdminBlock({ category, products }) {
   }
 
   async function saveEdit(productId) {
+    const targetCat = (allCategories || [category]).find((c) => c.id === editForm.categoryId) || category;
     await updateProduct(productId, {
       name: editForm.name.trim(),
       image: editForm.images[0] || "",
@@ -91,6 +109,8 @@ export default function CategoryAdminBlock({ category, products }) {
       price: Number(editForm.price),
       discountPrice: editForm.discountPrice ? Number(editForm.discountPrice) : null,
       qty: Number(editForm.qty),
+      categoryId: targetCat.id,
+      categoryName: targetCat.name,
     });
     setEditingId(null);
   }
@@ -98,11 +118,33 @@ export default function CategoryAdminBlock({ category, products }) {
   return (
     <div className="bg-white rounded-2xl border border-border p-4.5 mb-4">
       <div className="flex justify-between items-center mb-3">
-        <div className="font-bold text-base">{category.name}</div>
+        {renaming ? (
+          <div className="flex items-center gap-2 flex-1">
+            <input
+              value={newCatName}
+              onChange={(e) => setNewCatName(e.target.value)}
+              className="border border-border rounded-lg px-3 py-1.5 text-sm flex-1"
+              autoFocus
+            />
+            <button onClick={saveCategoryName}>
+              <Check size={16} className="text-success" />
+            </button>
+            <button onClick={() => { setRenaming(false); setNewCatName(category.name); }}>
+              <X size={16} className="text-muted" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <div className="font-bold text-base">{category.name}</div>
+            <button onClick={() => setRenaming(true)}>
+              <Pencil size={13} className="text-muted" />
+            </button>
+          </div>
+        )}
         <div className="flex gap-2.5">
           <button
             onClick={() => setOpen((o) => !o)}
-            className="border border-primary text-primary rounded-lg px-3 py-1.5 text-[13px] font-semibold"
+            className="border border-primary text-primary rounded-lg px-3 py-1.5 text-[13px] font-semibold whitespace-nowrap"
           >
             {open ? "Bekor qilish" : "+ Mahsulot"}
           </button>
@@ -222,6 +264,19 @@ export default function CategoryAdminBlock({ category, products }) {
                     onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                     className="border border-border rounded-lg px-3 py-2 text-sm bg-white"
                   />
+
+                  <select
+                    value={editForm.categoryId}
+                    onChange={(e) => setEditForm({ ...editForm, categoryId: e.target.value })}
+                    className="border border-border rounded-lg px-3 py-2 text-sm bg-white"
+                  >
+                    {(allCategories || [category]).map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+
                   <div>
                     <label className="flex items-center justify-center gap-1.5 border border-dashed border-border rounded-lg px-3 py-2 text-xs cursor-pointer bg-white">
                       {editUploading ? (
