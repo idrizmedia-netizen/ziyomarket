@@ -10,6 +10,7 @@ import CategoryPicker from "../components/CategoryPicker";
 import AdCarousel from "../components/AdCarousel";
 import ProductRow from "../components/ProductRow";
 import ProductDetailModal from "../components/ProductDetailModal";
+import Footer from "../components/Footer";
 import { ArrowUpDown, Flame, Sparkles, Zap } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { useAuth } from "../context/AuthContext";
@@ -79,7 +80,7 @@ export default function HomePage() {
     .slice(0, 10);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Header
         onCartOpen={() => setCartOpen(true)}
         onFavoritesOpen={() => setFavoritesOpen(true)}
@@ -88,7 +89,7 @@ export default function HomePage() {
         suggestionsSource={products}
       />
 
-      <div className="px-5 py-6 max-w-[1100px] mx-auto pb-16">
+      <div className="px-5 py-6 max-w-[1100px] mx-auto pb-16 flex-1 w-full">
         <AdCarousel />
 
         <div className="bg-gradient-to-br from-primary to-primaryDark rounded-2xl p-9 text-white mb-8">
@@ -172,6 +173,7 @@ export default function HomePage() {
       </div>
 
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} products={products} />
+      <Footer />
       <FavoritesDrawer
         open={favoritesOpen}
         onClose={() => setFavoritesOpen(false)}
