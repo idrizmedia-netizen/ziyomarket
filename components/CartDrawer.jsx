@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Plus, Minus, Trash2 } from "lucide-react";
+import { X, Plus, Minus, Trash2, Clock } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
@@ -10,12 +10,21 @@ import { placeOrder } from "../lib/firestore";
 import { signInWithGoogle } from "../lib/auth";
 import ProductImage from "./ProductImage";
 
+function toLocalInputValue(date) {
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
+    date.getHours()
+  )}:${pad(date.getMinutes())}`;
+}
+
 export default function CartDrawer({ open, onClose, products }) {
   const { cart, changeQty, removeFromCart, clearCart } = useCart();
   const { user } = useAuth();
   const { t } = useLanguage();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [pickupTime, setPickupTime] = useState("");
+  const [note, setNote] = useState("");
 
   if (!open) return null;
 
@@ -27,7 +36,14 @@ export default function CartDrawer({ open, onClose, products }) {
     })
     .filter(Boolean);
 
-  const total = items.reduce((s, i) => s + i.product.price * i.qty, 0);
+  const total = items.reduce(
+    (s, i) => s + (i.product.discountPrice || i.product.price) * i.qty,
+    0
+  );
+
+  const now = new Date();
+  const minPickup = new Date(now.getTime() + 15 * 60000); // kamida 15 daqiqadan keyin
+  const maxPickup = new Date(now.getTime() + 24 * 60 * 60000); // ko'pi bilan 24 soat
 
   async function handleConfirm() {
     setError("");
@@ -40,6 +56,19 @@ export default function CartDrawer({ open, onClose, products }) {
       }
     }
     if (items.length === 0) return;
+    if (!pickupTime) {
+      setError("Olib ketish vaqtini tanlang");
+      return;
+    }
+    const chosen = new Date(pickupTime);
+    if (chosen.getTime() > maxPickup.getTime()) {
+      setError("Olib ketish vaqti 24 soatdan oshmasligi kerak");
+      return;
+    }
+    if (chosen.getTime() < now.getTime()) {
+      setError("O'tgan vaqtni tanlab bo'lmaydi");
+      return;
+    }
     setSubmitting(true);
     try {
       await placeOrder({
@@ -50,13 +79,19 @@ export default function CartDrawer({ open, onClose, products }) {
           productId: i.product.id,
           name: i.product.name,
           categoryName: i.product.categoryName,
-          price: i.product.price,
+          price: i.product.discountPrice || i.product.price,
           qty: i.qty,
         })),
+        pickupTime,
+        note,
       });
       clearCart();
+      setPickupTime("");
+      setNote("");
       onClose();
-      alert("So'rovingiz qabul qilindi! Sotuvchi tayyorlab bergach, xaridingiz profilingizda \"Sotib oldingiz\" deb ko'rinadi.");
+      alert(
+        "So'rovingiz qabul qilindi! Belgilagan vaqtda do'konga kelib, mahsulotlaringizni olib keting."
+      );
     } catch (e) {
       setError(e.message || "Xatolik yuz berdi");
     } finally {
@@ -92,7 +127,7 @@ export default function CartDrawer({ open, onClose, products }) {
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-semibold">{i.product.name}</div>
                   <div className="text-[13px] text-primary font-bold">
-                    {formatSum(i.product.price)}
+                    {formatSum(i.product.discountPrice || i.product.price)}
                   </div>
                   <div className="flex items-center gap-2 mt-1.5">
                     <button
@@ -115,6 +150,33 @@ export default function CartDrawer({ open, onClose, products }) {
                 </div>
               </div>
             ))}
+
+            <div>
+              <label className="text-xs font-semibold text-ink flex items-center gap-1.5 mb-1">
+                <Clock size={13} />
+                Olib ketish vaqti (ko&apos;pi bilan 24 soat)
+              </label>
+              <input
+                type="datetime-local"
+                value={pickupTime}
+                min={toLocalInputValue(minPickup)}
+                max={toLocalInputValue(maxPickup)}
+                onChange={(e) => setPickupTime(e.target.value)}
+                className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-white"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-ink mb-1 block">
+                Izoh (ixtiyoriy) — masalan &quot;qadoqlab qo&apos;ying&quot;
+              </label>
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                rows={2}
+                className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-white"
+              />
+            </div>
           </div>
         )}
 
@@ -138,7 +200,7 @@ export default function CartDrawer({ open, onClose, products }) {
           </button>
         </div>
         <div className="text-[11px] text-muted mt-2 text-center">
-          {t("no_delivery_note")}
+          Belgilangan vaqtda kelmasangiz, buyurtma avtomatik bekor qilinadi.
         </div>
       </div>
     </div>
