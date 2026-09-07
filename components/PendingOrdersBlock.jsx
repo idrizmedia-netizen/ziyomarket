@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Check, X, Clock } from "lucide-react";
-import { subscribePendingOrders, fulfillOrder, cancelOrder } from "../lib/firestore";
+import { subscribePendingOrders, fulfillOrder, cancelOrder, autoCancelExpiredOrders } from "../lib/firestore";
 import { formatSum } from "../lib/utils";
 import { useAuth } from "../context/AuthContext";
 
@@ -14,7 +14,10 @@ export default function PendingOrdersBlock() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const unsub = subscribePendingOrders(setOrders);
+    const unsub = subscribePendingOrders((data) => {
+      setOrders(data);
+      autoCancelExpiredOrders(data);
+    });
     return () => unsub();
   }, []);
 
@@ -78,6 +81,17 @@ export default function PendingOrdersBlock() {
                     ? o.createdAt.toDate().toLocaleString("uz-UZ")
                     : "hozirgina"}
                 </div>
+                {o.pickupTime && (
+                  <div className="text-[12px] font-semibold text-accentDark mb-1.5 flex items-center gap-1">
+                    <Clock size={12} />
+                    Olib ketish: {new Date(o.pickupTime).toLocaleString("uz-UZ")}
+                  </div>
+                )}
+                {o.note && (
+                  <div className="text-[12px] text-ink bg-bg rounded-lg px-2.5 py-1.5 mb-2">
+                    💬 {o.note}
+                  </div>
+                )}
                 <div className="mb-2.5">
                   {o.items.map((it, idx) => (
                     <div key={idx} className="text-[13px] flex justify-between py-0.5">
