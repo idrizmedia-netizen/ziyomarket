@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
-import { subscribeUserOrders } from "../lib/firestore";
+import { subscribeUserOrders, autoCancelExpiredOrders } from "../lib/firestore";
 import { showOrderNotification } from "../lib/notifications";
 
 export default function OrderStatusWatcher() {
@@ -18,6 +18,8 @@ export default function OrderStatusWatcher() {
     }
 
     const unsub = subscribeUserOrders(user.uid, (orders) => {
+      autoCancelExpiredOrders(orders);
+
       if (firstLoad.current) {
         orders.forEach((o) => prevStatuses.current.set(o.id, o.status));
         firstLoad.current = false;
