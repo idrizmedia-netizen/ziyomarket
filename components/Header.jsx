@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ShoppingCart, User, ShieldCheck, Search, Sparkles, Heart } from "lucide-react";
+import { ShoppingCart, User, ShieldCheck, Search, Sparkles, Heart, Send } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
@@ -103,6 +103,17 @@ export default function Header({
         >
           {lang.toUpperCase()}
         </button>
+
+        <a
+          href="https://t.me/ziyomarket_oltinsoy"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Telegram kanalimiz"
+          className="flex items-center gap-1.5 bg-white/10 rounded-full px-2.5 sm:px-3 py-1.5 text-xs font-semibold"
+        >
+          <Send size={13} />
+          <span className="hidden sm:inline">Telegram</span>
+        </a>
 
         <InstallButton />
         <NotificationBell />
