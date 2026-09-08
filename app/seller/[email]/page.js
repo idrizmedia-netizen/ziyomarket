@@ -52,8 +52,19 @@ export default function SellerStorefrontPage({ params }) {
             <Store size={28} />
           </div>
           <div>
-            <div className="font-display text-2xl">{seller?.name || email}</div>
+            <div className="font-display text-2xl">
+              {seller?.storeName || seller?.name || email}
+            </div>
+            {seller?.storeName && seller?.name && (
+              <div className="text-white/70 text-sm">{seller.name}</div>
+            )}
             <div className="text-white/70 text-sm">ZiyoMarket sotuvchisi</div>
+            {seller?.phone && (
+              <div className="text-white/70 text-sm mt-0.5">📞 {seller.phone}</div>
+            )}
+            {seller?.address && (
+              <div className="text-white/70 text-sm">📍 {seller.address}</div>
+            )}
           </div>
         </div>
 
