@@ -11,6 +11,8 @@ export default function SellerApplicationBlock() {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [storeName, setStoreName] = useState("");
+  const [address, setAddress] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -28,6 +30,10 @@ export default function SellerApplicationBlock() {
       setError("Ism familiyangizni kiriting");
       return;
     }
+    if (!phone.trim()) {
+      setError("Telefon raqamingizni kiriting");
+      return;
+    }
     setSubmitting(true);
     setError("");
     try {
@@ -36,6 +42,8 @@ export default function SellerApplicationBlock() {
         name: name.trim(),
         email: user.email,
         phone: phone.trim(),
+        storeName: storeName.trim(),
+        address: address.trim(),
         message: message.trim(),
       });
       setShowForm(false);
@@ -82,9 +90,21 @@ export default function SellerApplicationBlock() {
                 className="border border-border rounded-lg px-3 py-2 text-sm"
               />
               <input
-                placeholder="Telefon raqam (ixtiyoriy)"
+                placeholder="Telefon raqam"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                className="border border-border rounded-lg px-3 py-2 text-sm"
+              />
+              <input
+                placeholder="Do'kon nomi (ixtiyoriy)"
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                className="border border-border rounded-lg px-3 py-2 text-sm"
+              />
+              <input
+                placeholder="Do'kon/manzil (ixtiyoriy)"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
                 className="border border-border rounded-lg px-3 py-2 text-sm"
               />
               <textarea
