@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { X, Star, Share2 } from "lucide-react";
 import ProductImage from "./ProductImage";
 import { formatSum } from "../lib/utils";
@@ -77,7 +78,7 @@ export default function ProductDetailModal({ product, onClose }) {
   }
 
   async function handleShare() {
-    const url = `${window.location.origin}/?product=${product.id}`;
+    const url = `${window.location.origin}/product/${product.id}`;
     const shareData = {
       title: product.name,
       text: `${product.name} — ${formatSum(product.discountPrice || product.price)} | ZiyoMarket`,
@@ -163,6 +164,15 @@ export default function ProductDetailModal({ product, onClose }) {
 
           {product.description && (
             <p className="text-sm text-muted mt-3 leading-relaxed">{product.description}</p>
+          )}
+
+          {product.createdBy && (
+            <Link
+              href={`/seller/${encodeURIComponent(product.createdBy)}`}
+              className="inline-block text-xs text-primary font-semibold mt-2"
+            >
+              Sotuvchi vitrinasini ko&apos;rish →
+            </Link>
           )}
 
           <div className="border-t border-border mt-5 pt-4">
