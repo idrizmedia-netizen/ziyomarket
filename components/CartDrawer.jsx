@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Plus, Minus, Trash2, Clock } from "lucide-react";
+import { X, Plus, Minus, Trash2, Clock, Phone } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
@@ -25,6 +25,7 @@ export default function CartDrawer({ open, onClose, products }) {
   const [error, setError] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [note, setNote] = useState("");
+  const [phone, setPhone] = useState("");
 
   if (!open) return null;
 
@@ -56,6 +57,10 @@ export default function CartDrawer({ open, onClose, products }) {
       }
     }
     if (items.length === 0) return;
+    if (!phone.trim()) {
+      setError("Telefon raqamingizni kiriting");
+      return;
+    }
     if (!pickupTime) {
       setError("Olib ketish vaqtini tanlang");
       return;
@@ -75,6 +80,7 @@ export default function CartDrawer({ open, onClose, products }) {
         uid: user?.uid,
         buyerName: user?.displayName || "Foydalanuvchi",
         buyerEmail: user?.email || "",
+        buyerPhone: phone.trim(),
         items: items.map((i) => ({
           productId: i.product.id,
           name: i.product.name,
@@ -88,6 +94,7 @@ export default function CartDrawer({ open, onClose, products }) {
       clearCart();
       setPickupTime("");
       setNote("");
+      setPhone("");
       onClose();
       alert(
         "So'rovingiz qabul qilindi! Belgilagan vaqtda do'konga kelib, mahsulotlaringizni olib keting."
@@ -150,6 +157,20 @@ export default function CartDrawer({ open, onClose, products }) {
                 </div>
               </div>
             ))}
+
+            <div>
+              <label className="text-xs font-semibold text-ink flex items-center gap-1.5 mb-1">
+                <Phone size={13} />
+                Telefon raqamingiz
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+998 90 123 45 67"
+                className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-white"
+              />
+            </div>
 
             <div>
               <label className="text-xs font-semibold text-ink flex items-center gap-1.5 mb-1">
