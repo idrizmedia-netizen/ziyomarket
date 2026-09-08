@@ -8,6 +8,8 @@ export default function SellerManageBlock({ currentEmail }) {
   const [sellers, setSellers] = useState([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [storeName, setStoreName] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -23,9 +25,14 @@ export default function SellerManageBlock({ currentEmail }) {
       return;
     }
     try {
-      await addSeller(clean, name.trim(), currentEmail);
+      await addSeller(clean, name.trim(), currentEmail, {
+        storeName: storeName.trim(),
+        phone: phone.trim(),
+      });
       setName("");
       setEmail("");
+      setStoreName("");
+      setPhone("");
     } catch (e) {
       setError(e.message || "Xatolik yuz berdi");
     }
@@ -55,6 +62,18 @@ export default function SellerManageBlock({ currentEmail }) {
           onChange={(e) => setEmail(e.target.value)}
           className="border border-border rounded-lg px-3 py-2.5 text-sm"
         />
+        <input
+          placeholder="Do'kon nomi (ixtiyoriy)"
+          value={storeName}
+          onChange={(e) => setStoreName(e.target.value)}
+          className="border border-border rounded-lg px-3 py-2.5 text-sm"
+        />
+        <input
+          placeholder="Telefon raqam (ixtiyoriy)"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="border border-border rounded-lg px-3 py-2.5 text-sm"
+        />
       </div>
       <button
         onClick={handleAdd}
@@ -77,6 +96,9 @@ export default function SellerManageBlock({ currentEmail }) {
             <span>
               {s.name ? <span className="font-medium">{s.name}</span> : null}
               <span className={s.name ? "text-muted text-xs ml-1.5" : ""}>{s.email}</span>
+              {s.storeName && (
+                <span className="block text-[11px] text-primary">🏪 {s.storeName}</span>
+              )}
             </span>
             <button onClick={() => removeSeller(s.email)}>
               <Trash2 size={14} className="text-danger" />
