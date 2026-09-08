@@ -18,7 +18,7 @@ export default function ProductCard({ product }) {
 
   async function handleShare(e) {
     e.stopPropagation();
-    const url = `${window.location.origin}/?product=${product.id}`;
+    const url = `${window.location.origin}/product/${product.id}`;
     const shareData = {
       title: product.name,
       text: `${product.name} — ${formatSum(product.discountPrice || product.price)} | ZiyoMarket`,
