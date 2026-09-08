@@ -59,7 +59,11 @@ export default function SellerApplicationsAdminBlock() {
             <div key={a.uid} className="border border-border rounded-xl p-3">
               <div className="text-sm font-semibold">{a.name}</div>
               <div className="text-xs text-muted">{a.email}</div>
-              {a.phone && <div className="text-xs text-muted">{a.phone}</div>}
+              {a.phone && <div className="text-xs text-muted">📞 {a.phone}</div>}
+              {a.storeName && (
+                <div className="text-xs text-muted">🏪 {a.storeName}</div>
+              )}
+              {a.address && <div className="text-xs text-muted">📍 {a.address}</div>}
               {a.message && <div className="text-sm mt-1.5">{a.message}</div>}
               <div className="flex gap-2 mt-2.5">
                 <button
