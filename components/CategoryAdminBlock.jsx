@@ -12,8 +12,10 @@ import {
   updateCategory,
 } from "../lib/firestore";
 import { uploadImage } from "../lib/imgbb";
+import { useAuth } from "../context/AuthContext";
 
 export default function CategoryAdminBlock({ category, products, allCategories }) {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -62,7 +64,7 @@ export default function CategoryAdminBlock({ category, products, allCategories }
 
   async function submit() {
     if (!form.name.trim() || !form.price || !form.qty) return;
-    await addProduct(category.id, category.name, form);
+    await addProduct(category.id, category.name, form, user?.email);
     setForm({ name: "", images: [], description: "", price: "", discountPrice: "", qty: "" });
     setOpen(false);
   }
