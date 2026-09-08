@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ShoppingCart, User, ShieldCheck, Search, Sparkles, Heart, Send } from "lucide-react";
+import { ShoppingCart, User, ShieldCheck, Search, Sparkles, Heart, Send, Moon, Sun } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
 import { useLanguage } from "../context/LanguageContext";
+import { useTheme } from "../context/ThemeContext";
 import { signInWithGoogle, signOutUser } from "../lib/auth";
 import InstallButton from "./InstallButton";
 import NotificationBell from "./NotificationBell";
@@ -22,6 +23,7 @@ export default function Header({
   const { cart } = useCart();
   const { favorites } = useFavorites();
   const { lang, setLang, t } = useLanguage();
+  const { dark, toggleDark } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
@@ -114,6 +116,14 @@ export default function Header({
           <Send size={13} />
           <span className="hidden sm:inline">Telegram</span>
         </a>
+
+        <button
+          onClick={toggleDark}
+          title={dark ? "Yorug' rejim" : "Qorong'i rejim"}
+          className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10"
+        >
+          {dark ? <Sun size={17} /> : <Moon size={17} />}
+        </button>
 
         <InstallButton />
         <NotificationBell />
