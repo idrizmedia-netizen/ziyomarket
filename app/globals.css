@@ -25,3 +25,53 @@ body {
     width: 100%;
   }
 }
+
+/* ---------- Qorong'i rejim ----------
+   Loyihada ranglar Tailwind konfiguratsiyasidagi belgilangan nomlar orqali
+   (bg-white, bg-bg, text-ink, border-border va h.k.) ishlatilgan. Har bir
+   komponentni alohida qayta yozish o'rniga, shu umumiy klasslarni ".dark"
+   holatida qayta belgilaymiz — shunday qilib butun sayt avtomatik moslashadi. */
+
+.dark html,
+.dark body {
+  background: linear-gradient(180deg, #14161f 0%, #191c27 45%, #1d2130 100%);
+  color: #e9e7de;
+}
+
+.dark .bg-white {
+  background-color: #1e2130 !important;
+}
+.dark .bg-bg {
+  background-color: #171a24 !important;
+}
+.dark .text-ink {
+  color: #e9e7de !important;
+}
+.dark .text-muted {
+  color: #9199b0 !important;
+}
+.dark .border-border {
+  border-color: #323649 !important;
+}
+.dark .bg-\[\#F0EBE0\] {
+  background-color: #262a3a !important;
+}
+.dark .bg-\[\#E4E0D5\] {
+  background-color: #2b2f40 !important;
+}
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1e2130;
+  color: #e9e7de;
+}
+.dark ::placeholder {
+  color: #6d7488;
+}
+.dark .shadow-sm,
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl,
+.dark .shadow-2xl {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+}
