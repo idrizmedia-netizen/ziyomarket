@@ -5,6 +5,7 @@ import * as XLSX from "xlsx";
 import { FileSpreadsheet, Upload, Download, Loader2, Image as ImageIcon } from "lucide-react";
 import { addProduct } from "../lib/firestore";
 import { uploadImage } from "../lib/imgbb";
+import { useAuth } from "../context/AuthContext";
 
 const TEMPLATE_ROWS = [
   ["Bo'lim", "Nomi", "Narxi", "Chegirmali narx", "Soni", "Tavsif", "Rasm fayli", "Rasm URL"],
@@ -16,6 +17,7 @@ function fileKey(name) {
 }
 
 export default function BulkImportBlock({ categories }) {
+  const { user } = useAuth();
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -80,14 +82,19 @@ export default function BulkImportBlock({ categories }) {
             images = [imageUrlColumn];
           }
 
-          await addProduct(cat.id, cat.name, {
-            name,
-            price,
-            qty,
-            discountPrice,
-            description,
-            images,
-          });
+          await addProduct(
+            cat.id,
+            cat.name,
+            {
+              name,
+              price,
+              qty,
+              discountPrice,
+              description,
+              images,
+            },
+            user?.email
+          );
           success++;
         } catch (rowErr) {
           failed++;
