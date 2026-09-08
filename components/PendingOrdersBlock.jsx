@@ -73,6 +73,9 @@ export default function PendingOrdersBlock() {
                   <div>
                     <div className="text-sm font-semibold">{o.buyerName}</div>
                     <div className="text-xs text-muted">{o.buyerEmail}</div>
+                    {o.buyerPhone && (
+                      <div className="text-xs font-semibold text-primary">{o.buyerPhone}</div>
+                    )}
                   </div>
                   <div className="text-sm font-bold text-primary">{formatSum(o.total)}</div>
                 </div>
