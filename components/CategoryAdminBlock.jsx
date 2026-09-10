@@ -28,6 +28,7 @@ export default function CategoryAdminBlock({ category, products, allCategories, 
   });
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
@@ -65,9 +66,14 @@ export default function CategoryAdminBlock({ category, products, allCategories, 
 
   async function submit() {
     if (!form.name.trim() || !form.price || !form.qty) return;
-    await addProduct(category.id, category.name, form, user?.email);
-    setForm({ name: "", images: [], description: "", price: "", discountPrice: "", qty: "" });
-    setOpen(false);
+    setSubmitError("");
+    try {
+      await addProduct(category.id, category.name, form, user?.email);
+      setForm({ name: "", images: [], description: "", price: "", discountPrice: "", qty: "" });
+      setOpen(false);
+    } catch (err) {
+      setSubmitError(err.message || "Saqlashda xatolik yuz berdi");
+    }
   }
 
   function startEdit(p) {
@@ -236,6 +242,10 @@ export default function CategoryAdminBlock({ category, products, allCategories, 
                 </div>
               ))}
             </div>
+          )}
+
+          {submitError && (
+            <div className="col-span-2 sm:col-span-4 text-danger text-xs">{submitError}</div>
           )}
 
           <button
