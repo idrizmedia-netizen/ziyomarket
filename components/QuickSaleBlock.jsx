@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, Plus, Minus, X, ShoppingBag, Check } from "lucide-react";
 import ProductImage from "./ProductImage";
 import ReceiptModal from "./ReceiptModal";
 import { formatSum } from "../lib/utils";
-import { createDirectSale } from "../lib/firestore";
+import { createDirectSale, subscribeSellers } from "../lib/firestore";
 import { useAuth } from "../context/AuthContext";
 
 export default function QuickSaleBlock({ products }) {
-  const { user } = useAuth();
+  const { user, isAdmin, isVendor } = useAuth();
   const [search, setSearch] = useState("");
   const [posCart, setPosCart] = useState([]); // [{productId, qty}]
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -18,10 +18,28 @@ export default function QuickSaleBlock({ products }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [receipt, setReceipt] = useState(null);
+  const [sellers, setSellers] = useState([]);
+
+  useEffect(() => {
+    const unsub = subscribeSellers(setSellers);
+    return () => unsub();
+  }, []);
+
+  const vendorEmails = new Set(
+    sellers.filter((s) => s.sellerType === "vendor").map((s) => s.email)
+  );
+
+  // Xodim (staff) faqat admin/xodim qo'shgan tovarni sotadi; mustaqil
+  // sotuvchi (vendor) faqat o'z tovarini; admin — hammasini.
+  const scopedProducts = isAdmin
+    ? products
+    : isVendor
+    ? products.filter((p) => p.createdBy === user?.email)
+    : products.filter((p) => !p.createdBy || !vendorEmails.has(p.createdBy));
 
   const filtered = search.trim()
-    ? products.filter((p) => p.name.toLowerCase().includes(search.trim().toLowerCase()))
-    : products;
+    ? scopedProducts.filter((p) => p.name.toLowerCase().includes(search.trim().toLowerCase()))
+    : scopedProducts;
 
   function addItem(productId, maxQty) {
     setPosCart((prev) => {
