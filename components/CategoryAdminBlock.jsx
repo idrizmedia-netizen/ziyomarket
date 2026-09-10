@@ -14,7 +14,8 @@ import {
 import { uploadImage } from "../lib/imgbb";
 import { useAuth } from "../context/AuthContext";
 
-export default function CategoryAdminBlock({ category, products, allCategories }) {
+export default function CategoryAdminBlock({ category, products, allCategories, restrictOwnEmail }) {
+  const canManageCategory = !restrictOwnEmail;
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
@@ -138,9 +139,11 @@ export default function CategoryAdminBlock({ category, products, allCategories }
         ) : (
           <div className="flex items-center gap-2">
             <div className="font-bold text-base">{category.name}</div>
-            <button onClick={() => setRenaming(true)}>
-              <Pencil size={13} className="text-muted" />
-            </button>
+            {canManageCategory && (
+              <button onClick={() => setRenaming(true)}>
+                <Pencil size={13} className="text-muted" />
+              </button>
+            )}
           </div>
         )}
         <div className="flex gap-2.5">
@@ -150,9 +153,11 @@ export default function CategoryAdminBlock({ category, products, allCategories }
           >
             {open ? "Bekor qilish" : "+ Mahsulot"}
           </button>
-          <button onClick={() => deleteCategory(category.id)}>
-            <Trash2 size={16} className="text-danger" />
-          </button>
+          {canManageCategory && (
+            <button onClick={() => deleteCategory(category.id)}>
+              <Trash2 size={16} className="text-danger" />
+            </button>
+          )}
         </div>
       </div>
 
