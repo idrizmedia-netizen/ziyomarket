@@ -2,11 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { X, Star, Share2 } from "lucide-react";
+import { X, Star, Share2, Store, Reply } from "lucide-react";
 import ProductImage from "./ProductImage";
 import { formatSum } from "../lib/utils";
 import { useAuth } from "../context/AuthContext";
-import { subscribeReviews, subscribeUserOrders, addReview } from "../lib/firestore";
+import {
+  subscribeReviews,
+  subscribeUserOrders,
+  addReview,
+  addReviewReply,
+  getSellerInfo,
+} from "../lib/firestore";
 import { signInWithGoogle } from "../lib/auth";
 
 function StarRow({ value, size = 14 }) {
@@ -23,8 +29,64 @@ function StarRow({ value, size = 14 }) {
   );
 }
 
+function ReviewReplyBox({ review, canReply, sellerEmail }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  if (review.sellerReply) {
+    return (
+      <div className="mt-1.5 ml-4 pl-3 border-l-2 border-border">
+        <div className="text-[12px] font-semibold text-primary flex items-center gap-1">
+          <Store size={11} /> Sotuvchi javobi
+        </div>
+        <div className="text-[13px] text-muted">{review.sellerReply}</div>
+      </div>
+    );
+  }
+
+  if (!canReply) return null;
+
+  return (
+    <div className="mt-1.5 ml-4">
+      {!open ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-1 text-[12px] text-primary font-semibold"
+        >
+          <Reply size={12} /> Javob yozish
+        </button>
+      ) : (
+        <div className="flex flex-col gap-1.5 mt-1">
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={2}
+            placeholder="Javobingiz..."
+            className="border border-border rounded-lg px-2.5 py-1.5 text-[13px]"
+          />
+          <button
+            disabled={submitting || !text.trim()}
+            onClick={async () => {
+              setSubmitting(true);
+              try {
+                await addReviewReply(review.id, text.trim(), sellerEmail);
+              } finally {
+                setSubmitting(false);
+              }
+            }}
+            className="self-start bg-primary text-white rounded-lg px-3 py-1 text-[12px] font-semibold disabled:opacity-60"
+          >
+            {submitting ? "Yuborilmoqda..." : "Yuborish"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProductDetailModal({ product, onClose }) {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [reviews, setReviews] = useState([]);
   const [userOrders, setUserOrders] = useState([]);
   const [rating, setRating] = useState(0);
@@ -32,6 +94,7 @@ export default function ProductDetailModal({ product, onClose }) {
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [sellerInfo, setSellerInfo] = useState(null);
   const gallery = product.images && product.images.length ? product.images : [product.image];
   const [activeImage, setActiveImage] = useState(0);
 
@@ -46,10 +109,16 @@ export default function ProductDetailModal({ product, onClose }) {
     return () => unsub();
   }, [user]);
 
+  useEffect(() => {
+    if (!product.createdBy) return;
+    getSellerInfo(product.createdBy).then(setSellerInfo);
+  }, [product.createdBy]);
+
   const hasPurchased = userOrders.some(
     (o) => o.status === "fulfilled" && o.items.some((it) => it.productId === product.id)
   );
   const alreadyReviewed = reviews.some((r) => r.buyerUid === user?.uid);
+  const canReplyToReviews = !!user && (isAdmin || user.email === product.createdBy);
 
   const avg = product.ratingCount ? product.ratingSum / product.ratingCount : 0;
 
@@ -122,6 +191,16 @@ export default function ProductDetailModal({ product, onClose }) {
         </div>
 
         <div className="p-5">
+          {(sellerInfo?.storeName || sellerInfo?.name) && (
+            <Link
+              href={`/seller/${encodeURIComponent(product.createdBy)}`}
+              className="flex items-center gap-1.5 text-xs font-semibold text-primary mb-2.5 bg-bg w-fit px-2.5 py-1 rounded-full"
+            >
+              <Store size={12} />
+              {sellerInfo.storeName || sellerInfo.name}
+            </Link>
+          )}
+
           <ProductImage src={gallery[activeImage]} alt={product.name} height={220} />
 
           {gallery.length > 1 && (
@@ -164,15 +243,6 @@ export default function ProductDetailModal({ product, onClose }) {
 
           {product.description && (
             <p className="text-sm text-muted mt-3 leading-relaxed">{product.description}</p>
-          )}
-
-          {product.createdBy && (
-            <Link
-              href={`/seller/${encodeURIComponent(product.createdBy)}`}
-              className="inline-block text-xs text-primary font-semibold mt-2"
-            >
-              Sotuvchi vitrinasini ko&apos;rish →
-            </Link>
           )}
 
           <div className="border-t border-border mt-5 pt-4">
@@ -246,6 +316,11 @@ export default function ProductDetailModal({ product, onClose }) {
                       <StarRow value={r.rating} size={12} />
                     </div>
                     {r.comment && <div className="text-sm text-muted">{r.comment}</div>}
+                    <ReviewReplyBox
+                      review={r}
+                      canReply={canReplyToReviews}
+                      sellerEmail={user?.email}
+                    />
                   </div>
                 ))}
               </div>
