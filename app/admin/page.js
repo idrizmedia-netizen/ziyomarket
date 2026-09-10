@@ -37,7 +37,7 @@ import { formatSum } from "../../lib/utils";
 import { signInWithGoogle } from "../../lib/auth";
 
 export default function AdminPage() {
-  const { user, isAdmin, isSeller, loading } = useAuth();
+  const { user, isAdmin, isSeller, isVendor, loading } = useAuth();
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -99,7 +99,7 @@ export default function AdminPage() {
   const tabs = [
     { id: "orders", label: "Buyurtmalar", icon: ClipboardList },
     { id: "stats", label: "Statistika", icon: BarChart3 },
-    ...(isAdmin ? [{ id: "products", label: "Mahsulotlar", icon: Boxes }] : []),
+    ...(isAdmin || isVendor ? [{ id: "products", label: "Mahsulotlar", icon: Boxes }] : []),
     ...(isAdmin ? [{ id: "settings", label: "Sozlamalar", icon: Settings }] : []),
   ];
 
@@ -215,37 +215,55 @@ export default function AdminPage() {
               </>
             )}
 
-            {tab === "products" && isAdmin && (
+            {tab === "products" && (isAdmin || isVendor) && (
               <>
-                <div className="bg-white rounded-2xl p-4.5 border border-border mb-6.5">
-                  <div className="font-bold mb-2.5">Yangi bo&apos;lim qo&apos;shish</div>
-                  <div className="flex gap-2.5">
-                    <input
-                      placeholder="Bo'lim nomi (masalan: Poyabzal)"
-                      value={newCatName}
-                      onChange={(e) => setNewCatName(e.target.value)}
-                      className="flex-1 border border-border rounded-lg px-3 py-2.5 text-sm"
-                    />
-                    <button
-                      onClick={() => {
-                        if (newCatName.trim()) addCategory(newCatName.trim());
-                        setNewCatName("");
-                      }}
-                      className="bg-primary text-white rounded-lg px-4.5 py-2.5 text-sm font-semibold"
-                    >
-                      Qo&apos;shish
-                    </button>
-                  </div>
-                </div>
+                {isAdmin && (
+                  <>
+                    <div className="bg-white rounded-2xl p-4.5 border border-border mb-6.5">
+                      <div className="font-bold mb-2.5">Yangi bo&apos;lim qo&apos;shish</div>
+                      <div className="flex gap-2.5">
+                        <input
+                          placeholder="Bo'lim nomi (masalan: Poyabzal)"
+                          value={newCatName}
+                          onChange={(e) => setNewCatName(e.target.value)}
+                          className="flex-1 border border-border rounded-lg px-3 py-2.5 text-sm"
+                        />
+                        <button
+                          onClick={() => {
+                            if (newCatName.trim()) addCategory(newCatName.trim());
+                            setNewCatName("");
+                          }}
+                          className="bg-primary text-white rounded-lg px-4.5 py-2.5 text-sm font-semibold"
+                        >
+                          Qo&apos;shish
+                        </button>
+                      </div>
+                    </div>
 
-                <BulkImportBlock categories={categories} />
+                    <BulkImportBlock categories={categories} />
+                  </>
+                )}
+
+                {!isAdmin && isVendor && (
+                  <div className="text-xs text-muted bg-white border border-border rounded-xl p-3 mb-4">
+                    Siz faqat o&apos;zingiz qo&apos;shgan mahsulotlarni ko&apos;rasiz va
+                    tahrirlaysiz.
+                  </div>
+                )}
 
                 {categories.map((cat) => (
                   <CategoryAdminBlock
                     key={cat.id}
                     category={cat}
-                    products={products.filter((p) => p.categoryId === cat.id)}
+                    products={
+                      isAdmin
+                        ? products.filter((p) => p.categoryId === cat.id)
+                        : products.filter(
+                            (p) => p.categoryId === cat.id && p.createdBy === user.email
+                          )
+                    }
                     allCategories={categories}
+                    restrictOwnEmail={isAdmin ? null : user.email}
                   />
                 ))}
               </>
