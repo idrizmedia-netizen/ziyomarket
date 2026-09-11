@@ -19,21 +19,17 @@ export function AuthProvider({ children }) {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser?.email) {
-        try {
-          const [admin, seller] = await Promise.all([
-            checkIsAdmin(firebaseUser.email),
-            getSellerDoc(firebaseUser.email),
-          ]);
-          setIsAdmin(admin);
-          setIsSeller(admin || !!seller);
-          setIsVendor(!!seller && seller.sellerType === "vendor");
-          setSellerDoc(seller);
-        } catch (e) {
-          setIsAdmin(false);
-          setIsSeller(false);
-          setIsVendor(false);
-          setSellerDoc(null);
-        }
+        // Ikkala tekshiruvni ALOHIDA-ALOHIDA bajaramiz — biri "ruxsat yo'q"
+        // xatosi bilan tugasa ham (masalan admin bo'lmagan odam uchun
+        // /admins/{email} o'qish taqiqlangan), ikkinchisi baribir ishlashi
+        // kerak.
+        const admin = await checkIsAdmin(firebaseUser.email).catch(() => false);
+        const seller = await getSellerDoc(firebaseUser.email).catch(() => null);
+
+        setIsAdmin(admin);
+        setIsSeller(admin || !!seller);
+        setIsVendor(!!seller && seller.sellerType === "vendor");
+        setSellerDoc(seller);
       } else {
         setIsAdmin(false);
         setIsSeller(false);
