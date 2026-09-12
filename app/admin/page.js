@@ -259,11 +259,7 @@ export default function AdminPage() {
                   </div>
                 )}
 
-                {(isAdmin ? categories : categories.filter(
-                  (cat) => cat.createdBy === user.email || products.some(
-                    (p) => p.categoryId === cat.id && p.createdBy === user.email
-                  )
-                )).map((cat) => (
+                {categories.map((cat) => (
                   <CategoryAdminBlock
                     key={cat.id}
                     category={cat}
