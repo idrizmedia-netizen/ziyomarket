@@ -15,7 +15,7 @@ import { uploadImage } from "../lib/imgbb";
 import { useAuth } from "../context/AuthContext";
 
 export default function CategoryAdminBlock({ category, products, allCategories, restrictOwnEmail }) {
-  const canManageCategory = !restrictOwnEmail;
+  const canManageCategory = !restrictOwnEmail || category.createdBy === restrictOwnEmail;
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
@@ -29,6 +29,7 @@ export default function CategoryAdminBlock({ category, products, allCategories, 
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [submittingProduct, setSubmittingProduct] = useState(false);
 
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
@@ -65,14 +66,18 @@ export default function CategoryAdminBlock({ category, products, allCategories, 
   }
 
   async function submit() {
+    if (submittingProduct) return;
     if (!form.name.trim() || !form.price || !form.qty) return;
     setSubmitError("");
+    setSubmittingProduct(true);
     try {
       await addProduct(category.id, category.name, form, user?.email);
       setForm({ name: "", images: [], description: "", price: "", discountPrice: "", qty: "" });
       setOpen(false);
     } catch (err) {
       setSubmitError(err.message || "Saqlashda xatolik yuz berdi");
+    } finally {
+      setSubmittingProduct(false);
     }
   }
 
@@ -250,10 +255,10 @@ export default function CategoryAdminBlock({ category, products, allCategories, 
 
           <button
             onClick={submit}
-            disabled={uploading}
+            disabled={uploading || submittingProduct}
             className="col-span-2 sm:col-span-4 bg-primary text-white rounded-lg py-2 text-sm font-semibold disabled:opacity-60"
           >
-            Saqlash
+            {submittingProduct ? "Saqlanmoqda..." : "Saqlash"}
           </button>
         </div>
       )}
