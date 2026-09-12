@@ -62,7 +62,7 @@ export default function Header({
         className="flex items-center gap-1.5 sm:gap-2 font-display text-lg sm:text-2xl font-bold shrink-0"
       >
         <Sparkles size={18} className="text-accent shrink-0" />
-        <span className="hidden xs:inline">ZiyoMarket</span>
+        <span className="inline">ZiyoMarket</span>
       </Link>
 
       <div className="flex-1 min-w-0 max-w-md flex items-center gap-2 bg-white/10 rounded-full px-3 sm:px-4 py-2 relative">
