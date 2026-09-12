@@ -34,9 +34,10 @@ import {
   subscribeCategories,
   subscribeProducts,
   subscribeAllOrders,
+  subscribeSellers,
   addCategory,
 } from "../../lib/firestore";
-import { formatSum } from "../../lib/utils";
+import { formatSum, computeSellerStats } from "../../lib/utils";
 import { signInWithGoogle } from "../../lib/auth";
 
 export default function AdminPage() {
@@ -44,6 +45,7 @@ export default function AdminPage() {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [sellers, setSellers] = useState([]);
   const [newCatName, setNewCatName] = useState("");
   const [search, setSearch] = useState("");
   const [cartOpen, setCartOpen] = useState(false);
@@ -65,12 +67,24 @@ export default function AdminPage() {
     return () => unsub();
   }, [isSeller]);
 
+  useEffect(() => {
+    const unsub = subscribeSellers(setSellers);
+    return () => unsub();
+  }, []);
+
   const fulfilledOrders = orders.filter((o) => o.status === "fulfilled");
   const sales = fulfilledOrders.flatMap((o) =>
     o.items.map((it) => ({ ...it, buyer: o.buyerName, date: o.createdAt }))
   );
-  const totalQty = sales.reduce((s, r) => s + r.qty, 0);
-  const totalRevenue = sales.reduce((s, r) => s + r.qty * r.price, 0);
+
+  // Yuqoridagi umumiy kartalar endi FAQAT joriy foydalanuvchining o'z
+  // mahsulotlari savdosini ko'rsatadi (admin bo'lsa ham) — butun do'kon
+  // statistikasi emas.
+  const allStats = computeSellerStats(fulfilledOrders, products, sellers);
+  const myStats = allStats.find((s) => s.email === user?.email);
+  const totalQty = myStats?.allQty || 0;
+  const totalRevenue = myStats?.all || 0;
+  const myOrderCount = myStats?.orderCount || 0;
 
   const salesByProduct = Object.values(
     sales.reduce((acc, r) => {
@@ -168,9 +182,9 @@ export default function AdminPage() {
             {tab === "stats" && (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-8">
-                  <StatCard label="Sotilgan mahsulot" value={`${totalQty} ta`} icon={<Package size={18} />} />
-                  <StatCard label="Umumiy tushum" value={formatSum(totalRevenue)} icon={<TrendingUp size={18} />} />
-                  <StatCard label="Yakunlangan buyurtmalar" value={fulfilledOrders.length} icon={<ShoppingCart size={18} />} />
+                  <StatCard label="Mening sotgan mahsulotim" value={`${totalQty} ta`} icon={<Package size={18} />} />
+                  <StatCard label="Mening tushumim" value={formatSum(totalRevenue)} icon={<TrendingUp size={18} />} />
+                  <StatCard label="Mening buyurtmalarim" value={myOrderCount} icon={<ShoppingCart size={18} />} />
                 </div>
 
                 <SellerStatsBlock
