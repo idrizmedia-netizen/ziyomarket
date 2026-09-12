@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BarChart3, ChevronRight } from "lucide-react";
 import { computeSellerStats, formatSum } from "../lib/utils";
+import { subscribeSellers } from "../lib/firestore";
 import SellerLedgerModal from "./SellerLedgerModal";
 
-export default function SellerStatsBlock({ fulfilledOrders, mode, currentEmail }) {
+export default function SellerStatsBlock({ fulfilledOrders, products, mode, currentEmail }) {
   const [ledgerSeller, setLedgerSeller] = useState(null);
-  const stats = computeSellerStats(fulfilledOrders);
+  const [sellers, setSellers] = useState([]);
+
+  useEffect(() => {
+    const unsub = subscribeSellers(setSellers);
+    return () => unsub();
+  }, []);
+
+  const stats = computeSellerStats(fulfilledOrders, products, sellers);
   const rows = mode === "admin" ? stats : stats.filter((s) => s.email === currentEmail);
 
   return (
