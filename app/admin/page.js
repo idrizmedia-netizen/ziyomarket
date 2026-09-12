@@ -10,6 +10,7 @@ import {
   Boxes,
   Settings,
   Download,
+  MessageCircle,
 } from "lucide-react";
 import Header from "../../components/Header";
 import CartDrawer from "../../components/CartDrawer";
@@ -20,6 +21,8 @@ import BulkImportBlock from "../../components/BulkImportBlock";
 import AdminManageBlock from "../../components/AdminManageBlock";
 import SellerManageBlock from "../../components/SellerManageBlock";
 import SellerApplicationsAdminBlock from "../../components/SellerApplicationsAdminBlock";
+import SellerChatThread from "../../components/SellerChatThread";
+import AdminChatBlock from "../../components/AdminChatBlock";
 import PendingOrdersBlock from "../../components/PendingOrdersBlock";
 import QuickSaleBlock from "../../components/QuickSaleBlock";
 import SellerStatsBlock from "../../components/SellerStatsBlock";
@@ -100,6 +103,7 @@ export default function AdminPage() {
     { id: "orders", label: "Buyurtmalar", icon: ClipboardList },
     { id: "stats", label: "Statistika", icon: BarChart3 },
     ...(isAdmin || isVendor ? [{ id: "products", label: "Mahsulotlar", icon: Boxes }] : []),
+    ...(isSeller && !isAdmin ? [{ id: "chat", label: "Chat", icon: MessageCircle }] : []),
     ...(isAdmin ? [{ id: "settings", label: "Sozlamalar", icon: Settings }] : []),
   ];
 
@@ -171,6 +175,7 @@ export default function AdminPage() {
 
                 <SellerStatsBlock
                   fulfilledOrders={fulfilledOrders}
+                  products={products}
                   mode={isAdmin ? "admin" : "seller"}
                   currentEmail={user.email}
                 />
@@ -217,41 +222,48 @@ export default function AdminPage() {
 
             {tab === "products" && (isAdmin || isVendor) && (
               <>
-                {isAdmin && (
-                  <>
-                    <div className="bg-white rounded-2xl p-4.5 border border-border mb-6.5">
-                      <div className="font-bold mb-2.5">Yangi bo&apos;lim qo&apos;shish</div>
-                      <div className="flex gap-2.5">
-                        <input
-                          placeholder="Bo'lim nomi (masalan: Poyabzal)"
-                          value={newCatName}
-                          onChange={(e) => setNewCatName(e.target.value)}
-                          className="flex-1 border border-border rounded-lg px-3 py-2.5 text-sm"
-                        />
-                        <button
-                          onClick={() => {
-                            if (newCatName.trim()) addCategory(newCatName.trim());
-                            setNewCatName("");
-                          }}
-                          className="bg-primary text-white rounded-lg px-4.5 py-2.5 text-sm font-semibold"
-                        >
-                          Qo&apos;shish
-                        </button>
-                      </div>
+                <div className="bg-white rounded-2xl p-4.5 border border-border mb-6.5">
+                  <div className="font-bold mb-2.5">
+                    {isAdmin ? "Yangi bo'lim qo'shish" : "O'z bo'limingizni yarating"}
+                  </div>
+                  {!isAdmin && (
+                    <div className="text-xs text-muted mb-2.5">
+                      Bu bo&apos;limga faqat siz mahsulot qo&apos;sha olasiz.
                     </div>
+                  )}
+                  <div className="flex gap-2.5">
+                    <input
+                      placeholder="Bo'lim nomi (masalan: Poyabzal)"
+                      value={newCatName}
+                      onChange={(e) => setNewCatName(e.target.value)}
+                      className="flex-1 border border-border rounded-lg px-3 py-2.5 text-sm"
+                    />
+                    <button
+                      onClick={() => {
+                        if (newCatName.trim()) addCategory(newCatName.trim(), isAdmin ? null : user.email);
+                        setNewCatName("");
+                      }}
+                      className="bg-primary text-white rounded-lg px-4.5 py-2.5 text-sm font-semibold"
+                    >
+                      Qo&apos;shish
+                    </button>
+                  </div>
+                </div>
 
-                    <BulkImportBlock categories={categories} />
-                  </>
-                )}
+                {isAdmin && <BulkImportBlock categories={categories} />}
 
                 {!isAdmin && isVendor && (
                   <div className="text-xs text-muted bg-white border border-border rounded-xl p-3 mb-4">
-                    Siz faqat o&apos;zingiz qo&apos;shgan mahsulotlarni ko&apos;rasiz va
-                    tahrirlaysiz.
+                    Siz faqat o&apos;zingiz yaratgan bo&apos;lim(lar)ga, o&apos;zingiz
+                    qo&apos;shgan mahsulotlarni ko&apos;rasiz va tahrirlaysiz.
                   </div>
                 )}
 
-                {categories.map((cat) => (
+                {(isAdmin ? categories : categories.filter(
+                  (cat) => cat.createdBy === user.email || products.some(
+                    (p) => p.categoryId === cat.id && p.createdBy === user.email
+                  )
+                )).map((cat) => (
                   <CategoryAdminBlock
                     key={cat.id}
                     category={cat}
@@ -269,6 +281,18 @@ export default function AdminPage() {
               </>
             )}
 
+            {tab === "chat" && isSeller && !isAdmin && (
+              <div className="bg-white rounded-2xl p-4.5 border border-border">
+                <div className="font-bold mb-3">Admin bilan chat</div>
+                <SellerChatThread
+                  sellerEmail={user.email}
+                  currentUserEmail={user.email}
+                  currentUserName={user.displayName || user.email}
+                  asAdmin={false}
+                />
+              </div>
+            )}
+
             {tab === "settings" && isAdmin && (
               <>
                 <AnnouncementsBlock />
@@ -276,6 +300,7 @@ export default function AdminPage() {
                 <AdminManageBlock currentEmail={user.email} />
                 <SellerApplicationsAdminBlock />
                 <SellerManageBlock currentEmail={user.email} />
+                <AdminChatBlock currentEmail={user.email} currentName={user.displayName || user.email} />
               </>
             )}
           </>
