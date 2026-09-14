@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import {
   subscribeReviews,
   subscribeUserOrders,
+  subscribeProducts,
   addReview,
   addReviewReply,
   getSellerInfo,
@@ -87,21 +88,32 @@ function ReviewReplyBox({ review, canReply, sellerEmail }) {
 
 export default function ProductDetailModal({ product, onClose }) {
   const { user, isAdmin } = useAuth();
+  const [viewingProduct, setViewingProduct] = useState(product);
   const [reviews, setReviews] = useState([]);
   const [userOrders, setUserOrders] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [sellerInfo, setSellerInfo] = useState(null);
-  const gallery = product.images && product.images.length ? product.images : [product.image];
   const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
-    const unsub = subscribeReviews(product.id, setReviews);
+    setViewingProduct(product);
+    setActiveImage(0);
+  }, [product]);
+
+  const gallery =
+    viewingProduct.images && viewingProduct.images.length
+      ? viewingProduct.images
+      : [viewingProduct.image];
+
+  useEffect(() => {
+    const unsub = subscribeReviews(viewingProduct.id, setReviews);
     return () => unsub();
-  }, [product.id]);
+  }, [viewingProduct.id]);
 
   useEffect(() => {
     if (!user) return;
@@ -110,17 +122,29 @@ export default function ProductDetailModal({ product, onClose }) {
   }, [user]);
 
   useEffect(() => {
-    if (!product.createdBy) return;
-    getSellerInfo(product.createdBy).then(setSellerInfo);
-  }, [product.createdBy]);
+    const unsub = subscribeProducts(setAllProducts);
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    if (!viewingProduct.createdBy) {
+      setSellerInfo(null);
+      return;
+    }
+    getSellerInfo(viewingProduct.createdBy).then(setSellerInfo);
+  }, [viewingProduct.createdBy]);
 
   const hasPurchased = userOrders.some(
-    (o) => o.status === "fulfilled" && o.items.some((it) => it.productId === product.id)
+    (o) => o.status === "fulfilled" && o.items.some((it) => it.productId === viewingProduct.id)
   );
   const alreadyReviewed = reviews.some((r) => r.buyerUid === user?.uid);
-  const canReplyToReviews = !!user && (isAdmin || user.email === product.createdBy);
+  const canReplyToReviews = !!user && (isAdmin || user.email === viewingProduct.createdBy);
 
-  const avg = product.ratingCount ? product.ratingSum / product.ratingCount : 0;
+  const avg = viewingProduct.ratingCount ? viewingProduct.ratingSum / viewingProduct.ratingCount : 0;
+
+  const similarProducts = allProducts
+    .filter((p) => p.categoryId === viewingProduct.categoryId && p.id !== viewingProduct.id)
+    .slice(0, 6);
 
   async function handleSubmitReview() {
     setError("");
@@ -131,7 +155,7 @@ export default function ProductDetailModal({ product, onClose }) {
     setSubmitting(true);
     try {
       await addReview({
-        productId: product.id,
+        productId: viewingProduct.id,
         buyerUid: user.uid,
         buyerName: user.displayName || user.email,
         rating,
@@ -147,10 +171,10 @@ export default function ProductDetailModal({ product, onClose }) {
   }
 
   async function handleShare() {
-    const url = `${window.location.origin}/product/${product.id}`;
+    const url = `${window.location.origin}/product/${viewingProduct.id}`;
     const shareData = {
-      title: product.name,
-      text: `${product.name} — ${formatSum(product.discountPrice || product.price)} | ZiyoMarket`,
+      title: viewingProduct.name,
+      text: `${viewingProduct.name} — ${formatSum(viewingProduct.discountPrice || viewingProduct.price)} | ZiyoMarket`,
       url,
     };
     if (navigator.share) {
@@ -179,7 +203,7 @@ export default function ProductDetailModal({ product, onClose }) {
         className="bg-white rounded-2xl w-[480px] max-w-full max-h-[88vh] overflow-y-auto"
       >
         <div className="flex justify-between items-center px-5 py-4 border-b border-border sticky top-0 bg-white z-10">
-          <div className="font-display text-lg">{product.name}</div>
+          <div className="font-display text-lg">{viewingProduct.name}</div>
           <div className="flex items-center gap-3">
             <button onClick={handleShare} title="Ulashish">
               <Share2 size={18} className="text-primary" />
@@ -193,7 +217,7 @@ export default function ProductDetailModal({ product, onClose }) {
         <div className="p-5">
           {(sellerInfo?.storeName || sellerInfo?.name) && (
             <Link
-              href={`/seller/${encodeURIComponent(product.createdBy)}`}
+              href={`/seller/${encodeURIComponent(viewingProduct.createdBy)}`}
               className="flex items-center gap-1.5 text-xs font-semibold text-primary mb-2.5 bg-bg w-fit px-2.5 py-1 rounded-full"
             >
               <Store size={12} />
@@ -201,7 +225,7 @@ export default function ProductDetailModal({ product, onClose }) {
             </Link>
           )}
 
-          <ProductImage src={gallery[activeImage]} alt={product.name} height={220} />
+          <ProductImage src={gallery[activeImage]} alt={viewingProduct.name} height={220} />
 
           {gallery.length > 1 && (
             <div className="flex gap-2 mt-2 overflow-x-auto">
@@ -220,29 +244,56 @@ export default function ProductDetailModal({ product, onClose }) {
           )}
 
           <div className="flex items-center gap-2 mt-3">
-            {product.discountPrice ? (
+            {viewingProduct.discountPrice ? (
               <>
-                <span className="text-sm text-muted line-through">{formatSum(product.price)}</span>
+                <span className="text-sm text-muted line-through">
+                  {formatSum(viewingProduct.price)}
+                </span>
                 <span className="text-xl font-bold text-danger">
-                  {formatSum(product.discountPrice)}
+                  {formatSum(viewingProduct.discountPrice)}
                 </span>
               </>
             ) : (
-              <span className="text-xl font-bold text-primary">{formatSum(product.price)}</span>
+              <span className="text-xl font-bold text-primary">
+                {formatSum(viewingProduct.price)}
+              </span>
             )}
           </div>
 
-          {product.ratingCount > 0 && (
+          {viewingProduct.ratingCount > 0 && (
             <div className="flex items-center gap-2 mt-2">
               <StarRow value={avg} />
               <span className="text-xs text-muted">
-                {avg.toFixed(1)} ({product.ratingCount} ta baho)
+                {avg.toFixed(1)} ({viewingProduct.ratingCount} ta baho)
               </span>
             </div>
           )}
 
-          {product.description && (
-            <p className="text-sm text-muted mt-3 leading-relaxed">{product.description}</p>
+          {viewingProduct.description && (
+            <p className="text-sm text-muted mt-3 leading-relaxed">{viewingProduct.description}</p>
+          )}
+
+          {similarProducts.length > 0 && (
+            <div className="border-t border-border mt-5 pt-4">
+              <div className="font-bold text-sm mb-3">O&apos;xshash mahsulotlar</div>
+              <div className="flex gap-2.5 overflow-x-auto pb-1">
+                {similarProducts.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setViewingProduct(p)}
+                    className="w-24 shrink-0 text-left"
+                  >
+                    <ProductImage src={p.image} alt={p.name} height={72} />
+                    <div className="text-[11px] font-medium mt-1 line-clamp-2 leading-tight">
+                      {p.name}
+                    </div>
+                    <div className="text-[11px] font-bold text-primary">
+                      {formatSum(p.discountPrice || p.price)}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
 
           <div className="border-t border-border mt-5 pt-4">
