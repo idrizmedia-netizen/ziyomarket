@@ -27,6 +27,7 @@ import PendingOrdersBlock from "../../components/PendingOrdersBlock";
 import QuickSaleBlock from "../../components/QuickSaleBlock";
 import SellerStatsBlock from "../../components/SellerStatsBlock";
 import SellerRevenueChart from "../../components/SellerRevenueChart";
+import LowStockBlock from "../../components/LowStockBlock";
 import AnnouncementsBlock from "../../components/AnnouncementsBlock";
 import AdsManageBlock from "../../components/AdsManageBlock";
 import { useAuth } from "../../context/AuthContext";
@@ -195,6 +196,8 @@ export default function AdminPage() {
                 />
 
                 <SellerRevenueChart fulfilledOrders={fulfilledOrders} />
+
+                <LowStockBlock products={products} isAdmin={isAdmin} currentEmail={user.email} />
 
                 <div className="flex items-center justify-between mt-8 mb-3">
                   <div className="font-display text-lg">Sotuvlar tarixi</div>
