@@ -17,6 +17,15 @@ export default function Footer() {
             <Briefcase size={14} />
             Vakansiyalar — sotuvchi bo&apos;ling
           </Link>
+          <Link href="/faq" className="hover:text-white">
+            Ko&apos;p beriladigan savollar
+          </Link>
+          <Link href="/terms" className="hover:text-white">
+            Foydalanish shartlari
+          </Link>
+          <Link href="/privacy" className="hover:text-white">
+            Maxfiylik siyosati
+          </Link>
         </div>
 
         <div className="flex flex-col gap-2">
