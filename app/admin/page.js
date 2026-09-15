@@ -20,6 +20,7 @@ import CategoryAdminBlock from "../../components/CategoryAdminBlock";
 import BulkImportBlock from "../../components/BulkImportBlock";
 import AdminManageBlock from "../../components/AdminManageBlock";
 import SellerManageBlock from "../../components/SellerManageBlock";
+import DataExportBlock from "../../components/DataExportBlock";
 import SellerApplicationsAdminBlock from "../../components/SellerApplicationsAdminBlock";
 import SellerChatThread from "../../components/SellerChatThread";
 import AdminChatBlock from "../../components/AdminChatBlock";
@@ -313,6 +314,7 @@ export default function AdminPage() {
                 <AdminManageBlock currentEmail={user.email} />
                 <SellerApplicationsAdminBlock />
                 <SellerManageBlock currentEmail={user.email} />
+                <DataExportBlock />
                 <AdminChatBlock currentEmail={user.email} currentName={user.displayName || user.email} />
               </>
             )}
