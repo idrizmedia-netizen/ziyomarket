@@ -130,6 +130,7 @@ export default function AdminPage() {
         onFavoritesOpen={() => setFavoritesOpen(true)}
         search={search}
         onSearchChange={setSearch}
+        suggestionsSource={products}
       />
 
       <div className="px-5 py-6 max-w-[1000px] mx-auto pb-16">
