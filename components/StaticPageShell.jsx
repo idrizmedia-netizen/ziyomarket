@@ -26,6 +26,7 @@ export default function StaticPageShell({ title, children }) {
         onFavoritesOpen={() => setFavoritesOpen(true)}
         search={search}
         onSearchChange={setSearch}
+        suggestionsSource={products}
       />
 
       <div className="px-5 py-8 max-w-[720px] mx-auto flex-1 w-full">
