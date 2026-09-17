@@ -44,6 +44,7 @@ export default function SellerStorefrontPage({ params }) {
         onFavoritesOpen={() => setFavoritesOpen(true)}
         search={search}
         onSearchChange={setSearch}
+        suggestionsSource={allProducts}
       />
 
       <div className="px-5 py-8 max-w-[1100px] mx-auto flex-1 w-full">
