@@ -40,6 +40,7 @@ export default function ProductLandingClient({ productId }) {
         onFavoritesOpen={() => setFavoritesOpen(true)}
         search={search}
         onSearchChange={setSearch}
+        suggestionsSource={products}
       />
 
       <div className="px-5 py-8 max-w-[600px] mx-auto flex-1 w-full">
